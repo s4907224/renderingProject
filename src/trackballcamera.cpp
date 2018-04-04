@@ -126,7 +126,7 @@ void TrackballCamera::update() {
         m_transformedEye = (R_yaw * R_pitch * (m_zoom * (m_eye-m_target))) + m_target;
         m_V = glm::lookAt(glm::vec3(m_transformedEye), glm::vec3(m_target), glm::vec3(0.0f,1.0f,0.0f));
         glm::dvec3 temp = (R_yaw * R_pitch * m_eye);
-        m_VNoTranslate = glm::lookAt(glm::vec3(0.f, 0.f, 0.f), glm::vec3(-m_transformedEye), glm::vec3(0.f, 1.f, 0.f));
+        m_VNoTranslate = glm::lookAt(glm::vec3(0.f, 0.f, 0.f), glm::vec3(-temp), glm::vec3(0.f, 1.f, 0.f));
         m_dirty = false;
     }
 }

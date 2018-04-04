@@ -21,6 +21,7 @@ void main ()
     vec3 p = -FragmentPosition;
 
     vec3 lookup = normalize(worldPos.xyz / worldPos.w);
+    lookup.y *= -1;
 
     vec4 colour = texture(envMap, lookup);
 
