@@ -30,9 +30,15 @@ void EnvScene::initGL() noexcept {
     shader->use("EnvironmentProgram");
     shader->setUniform("glossMap", 1);
 
+
+    shader->loadShader("BeckmannProgram",
+                       "/home/cglover/rendering_examples/environment/shaders/env_vert.glsl",
+                       "/home/cglover/rendering_examples/environment/shaders/env_frag.glsl");
+    shader->use("BeckmannProgram");
+    shader->setUniform("glossMap", 1);
     ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
     prim->createTrianglePlane("plane",2,2,1,1,ngl::Vec3(0,1,0));
-    prim->createSphere("sphere", 1.f, 20);
+    prim->createTorus("torus", 0.1f, 0.2f, 20, 20, false);
 }
 
 void EnvScene::paintGL() noexcept
@@ -48,37 +54,69 @@ void EnvScene::paintGL() noexcept
 
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["EnvironmentProgram"]->use();
-  GLint progID = shader->getProgramID("EnvironmentProgram");
-
+  GLint envID = shader->getProgramID("EnvironmentProgram");
   glm::mat4 M, MV, MVP;
   glm::mat3 normalMatrix;
 
-  //M = glm::translate(M, glm::vec3(0.f, 0.f, -1.f));
   M = glm::scale(M, glm::vec3(50.f, 50.f, 50.f));
-  MV = m_VNoTranslate * M;
+  MV = m_V2 * M;
   MVP = m_P * MV;
-  normalMatrix = MV;
-  normalMatrix = glm::inverse(normalMatrix);
+  normalMatrix = glm::inverse(glm::mat3(MV));
 
   // Set this MVP on the GPU
-  glUniformMatrix4fv(glGetUniformLocation(progID, "MVP"), //location of uniform
+  glUniformMatrix4fv(glGetUniformLocation(envID, "MVP"), //location of uniform
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(MVP)); // a raw pointer to the data
-  glUniformMatrix4fv(glGetUniformLocation(progID, "MV"), //location of uniform
+  glUniformMatrix4fv(glGetUniformLocation(envID, "MV"), //location of uniform
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(MV)); // a raw pointer to the data
-  glUniformMatrix4fv(glGetUniformLocation(progID, "normalMatrix"), //location of uniform
+  glUniformMatrix4fv(glGetUniformLocation(envID, "normalMatrix"), //location of uniform
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(normalMatrix)); // a raw pointer to the data
-  glUniformMatrix4fv(glGetUniformLocation(progID, "invV"), //location of uniform
+  glUniformMatrix4fv(glGetUniformLocation(envID, "invV"), //location of uniform
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   prim->draw("cube");
+
+  glm::mat3 N;
+  M = glm::scale(M, glm::vec3(0.02f, 0.02f, 0.02f));
+  M = glm::rotate(M, float(M_PI/2.f), glm::vec3(1.f, 0.f, 0.f));
+  MV = m_V * M;
+  MVP = m_P * MV;
+  N = glm::inverse(glm::mat3(MV));
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      std::cout<<N[i][j]<<' ';
+    }
+    std::cout<<'\n';
+  }
+  std::cout<<"\n\n";
+
+  //normalMatrix = glm::inverse(normalMatrix);
+  (*shader)["BeckmannProgram"]->use();
+  GLint beckmannID = shader->getProgramID("BeckmannProgram");
+  // Set this MVP on the GPU
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "MVP"), //location of uniform
+                     1, // how many matrices to transfer
+                     false, // whether to transpose matrix
+                     glm::value_ptr(MVP)); // a raw pointer to the data
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "MV"), //location of uniform
+                     1, // how many matrices to transfer
+                     false, // whether to transpose matrix
+                     glm::value_ptr(MV)); // a raw pointer to the data
+  glUniformMatrix3fv(glGetUniformLocation(beckmannID, "N"), //location of uniform
+                     1, // how many matrices to transfer
+                     true, // whether to transpose matrix
+                     glm::value_ptr(N)); // a raw pointer to the data
+
+  prim->draw("torus");
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename) {
@@ -153,6 +191,8 @@ void EnvScene::initEnvironment() {
     // Set our cube map texture to on the shader so we can use it
     ngl::ShaderLib *shader=ngl::ShaderLib::instance();
     shader->use("EnvironmentProgram");
+    shader->setUniform("envMap", 0);
+    shader->use("BeckmannProgram");
     shader->setUniform("envMap", 0);
 }
 

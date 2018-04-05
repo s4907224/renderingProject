@@ -25,8 +25,10 @@ SOURCES += src/main.cpp src/envscene.cpp \
            src/scene.cpp \
            src/trackballcamera.cpp
 
-OTHER_FILES += shaders/env_vert.glsl \
-               shaders/env_frag.glsl
+OTHER_FILES +=  shaders/env_vert.glsl \
+                shaders/env_frag.glsl \
+                shaders/beckmann_vert.glsl \
+                shaders/beckmann_frag.glsl
 
 DISTFILES += $OTHER_FILES
 

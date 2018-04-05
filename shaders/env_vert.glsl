@@ -25,7 +25,7 @@ void main() {
 
     FragmentNormal = normalize(normalMatrix * VertexNormal);
 
-    worldPos = vec4(VertexPosition, 1.f);
+    worldPos = MV * vec4(VertexPosition, 1.f);
 
     // Compute the unprojected vertex position
     FragmentPosition = vec3(MVP * vec4(VertexPosition + vec3(0, 0, 1), 1.0) );

@@ -42,7 +42,7 @@ public:
     /// Set the projection matrix from somewhere else
     void setProjMatrix(glm::mat4 _P) {m_P = _P;}
 
-    void setViewNoTranslateMatrix(glm::mat4 _VNT) {m_VNoTranslate = _VNT;}
+    void setView2Matrix(glm::mat4 _V2) {m_V2 = _V2;}
 
 protected:
     /// Check for generic OpenGL errors
@@ -64,7 +64,7 @@ protected:
     GLfloat m_ratio;
 
     /// Keep a view and projection matrix here to render our scene
-    glm::mat4 m_V, m_P, m_VNoTranslate;
+    glm::mat4 m_V, m_P, m_V2;
 
     /// Function to convert HSV to RGB
     static void hsv2rgb(glm::vec3& rgb, const glm::vec3& hsv);
