@@ -24,21 +24,22 @@ void EnvScene::initGL() noexcept {
                        "shaders/env_vert.glsl",
                        "shaders/env_frag.glsl");
     // Initialise our environment map here
-    initEnvironment();
-    // Initialise our gloss texture map here
-    initTexture(1, m_glossMapTex, "images/gloss.png");
-    shader->use("EnvironmentProgram");
-    shader->setUniform("glossMap", 1);
 
+    // Initialise our gloss texture map here
 
     shader->loadShader("BeckmannProgram",
-                       "/home/cglover/rendering_examples/environment/shaders/env_vert.glsl",
-                       "/home/cglover/rendering_examples/environment/shaders/env_frag.glsl");
+                       "shaders/beckmann_vert.glsl",
+                       "shaders/beckmann_frag.glsl");
     shader->use("BeckmannProgram");
-    shader->setUniform("glossMap", 1);
+
+    initTexture(3, m_glossMapTex, "images/bump.jpg");
+    shader->setUniform("normalMap", 3);
+    initEnvironment();
     ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
     prim->createTrianglePlane("plane",2,2,1,1,ngl::Vec3(0,1,0));
-    prim->createTorus("torus", 0.1f, 0.2f, 20, 20, false);
+    prim->createTorus("torus", 0.1f, 0.2f, 200, 200, false);
+    prim->createSphere("sphere", 1.f, 30);
+    m_roughness = 0.5f;
 }
 
 void EnvScene::paintGL() noexcept
@@ -80,24 +81,19 @@ void EnvScene::paintGL() noexcept
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
+
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   prim->draw("cube");
 
   glm::mat3 N;
-  M = glm::scale(M, glm::vec3(0.02f, 0.02f, 0.02f));
-  M = glm::rotate(M, float(M_PI/2.f), glm::vec3(1.f, 0.f, 0.f));
+  M = glm::mat4();
+  //M = glm::scale(M, glm::vec3(1.8f, 1.f, 1.8f));
+  M = glm::scale(M, glm::vec3(0.1f, 0.1f, 0.1f));
+  M = glm::translate(M, glm::vec3(0.f, -5.f, 0.f));
+  //M = glm::rotate(M, float(M_PI/2.f), glm::vec3(1.f, 0.f, 0.f));
   MV = m_V * M;
   MVP = m_P * MV;
   N = glm::inverse(glm::mat3(MV));
-  for (int i = 0; i < 3; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      std::cout<<N[i][j]<<' ';
-    }
-    std::cout<<'\n';
-  }
-  std::cout<<"\n\n";
 
   //normalMatrix = glm::inverse(normalMatrix);
   (*shader)["BeckmannProgram"]->use();
@@ -111,12 +107,17 @@ void EnvScene::paintGL() noexcept
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(MV)); // a raw pointer to the data
-  glUniformMatrix3fv(glGetUniformLocation(beckmannID, "N"), //location of uniform
+  glUniformMatrix3fv(glGetUniformLocation(beckmannID, "normalMatrix"), //location of uniform
                      1, // how many matrices to transfer
                      true, // whether to transpose matrix
                      glm::value_ptr(N)); // a raw pointer to the data
+  glUniformMatrix4fv(glGetUniformLocation(envID, "invV"), //location of uniform
+                     1, // how many matrices to transfer
+                     false, // whether to transpose matrix
+                     glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
+  shader->setUniform("roughness", m_roughness);
 
-  prim->draw("torus");
+  prim->draw("dragon");
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename) {
@@ -168,12 +169,12 @@ void EnvScene::initEnvironment() {
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_envTex);
 
     // Now load up the sides of the cube
-    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "images/sky_zneg.png");
-    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "images/sky_zpos.png");
-    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, "images/sky_ypos.png");
-    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "images/sky_yneg.png");
-    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, "images/sky_xneg.png");
-    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_X, "images/sky_xpos.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "images/nz.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "images/pz.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, "images/ny.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "images/py.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, "images/nx.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_X, "images/px.png");
 
     // Generate mipmap levels
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);

@@ -67,7 +67,34 @@ void key_callback(GLFWwindow* window, int key, int /*scancode*/, int action, int
     // Escape exits the application
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);        
-    } else {
+    }
+    else if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+    {
+      if(g_scene.m_roughness > 0.11f)
+      {
+        g_scene.m_roughness -= 0.05f;
+        std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
+      }
+      else
+      {
+        g_scene.m_roughness = 0.1f;
+        std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
+      }
+    }
+    else if (key == GLFW_KEY_2 && action == GLFW_PRESS)
+    {
+      if(g_scene.m_roughness < 1.f)
+      {
+       g_scene.m_roughness += 0.05f;
+       std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
+      }
+      else
+      {
+        g_scene.m_roughness = 1.f;
+        std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
+      }
+    }
+        else {
         // Any other keypress should be handled by our camera
         g_camera.handleKey(key, (action == GLFW_PRESS) );
     }
