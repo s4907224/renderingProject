@@ -105,20 +105,22 @@ void main()
   vec3 p = FragmentPosition.xyz / FragmentPosition.w;
   vec3 s = normalize(-reflect(v, n));
   //s = normalize(Light1.Position).xyz;
-  vec3 lookup = reflect(v, n);
+  vec3 lookup = -s;
   lookup.x *= -1;
-  lookup = (vec4(lookup, 1)).xyz;
+  //lookup.z *= -1;
+  //lookup = (vec4(lookup, 1)).xyz;
   vec3 brdf = beckmann(n, v, s, roughness);
-  vec3 specular = textureLod(envMap, lookup, 11 * roughness).rgb;
+  vec3 specular = textureLod(envMap, lookup, 16 * roughness).rgb;
   brdf = max(brdf, 0);
   brdf = min(brdf, 1);
   specular *= brdf;
 
-  vec3 indirectDiffuse = textureLod(envMap, lookup, 11).rgb;
+  vec3 indirectDiffuse = textureLod(envMap, lookup, 16).rgb;
 
-  vec3 lightSig =  indirectDiffuse + (specular);// + Material.Ka;
+  vec3 lightSig =  indirectDiffuse + (specular) + Material.Ka;
   //lightSig *= vec3(0.878431372549, 0.349019607843, 0.56862745098);
 
 
   FragColor = vec4(lightSig , 1.f);
+  //FragColor = vec4(indirectDiffuse, 1.f);
 }

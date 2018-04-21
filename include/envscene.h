@@ -33,6 +33,8 @@ private:
     void initFBO();
     bool m_isFBODirty = true;
     GLuint m_fboID, m_fboTextureID, m_fboDepthID;
+
+    ngl::Obj *m_mesh;
 };
 
 #endif // MYSCENE_H

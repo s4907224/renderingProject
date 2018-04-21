@@ -40,6 +40,9 @@ void EnvScene::initGL() noexcept {
     prim->createTorus("torus", 0.1f, 0.2f, 200, 200, false);
     prim->createSphere("sphere", 1.f, 30);
     m_roughness = 0.5f;
+
+    m_mesh = new ngl::Obj("models/usbtri.obj");
+    m_mesh->createVAO();
 }
 
 void EnvScene::paintGL() noexcept
@@ -88,8 +91,8 @@ void EnvScene::paintGL() noexcept
   glm::mat3 N;
   M = glm::mat4();
   //M = glm::scale(M, glm::vec3(1.8f, 1.f, 1.8f));
-  M = glm::scale(M, glm::vec3(0.1f, 0.1f, 0.1f));
-  M = glm::translate(M, glm::vec3(0.f, -5.f, 0.f));
+  //M = glm::scale(M, glm::vec3(0.1f, 0.1f, 0.1f));
+  //M = glm::translate(M, glm::vec3(0.f, -5.f, 0.f));
   //M = glm::rotate(M, float(M_PI/2.f), glm::vec3(1.f, 0.f, 0.f));
   MV = m_V * M;
   MVP = m_P * MV;
@@ -117,7 +120,8 @@ void EnvScene::paintGL() noexcept
                      glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
   shader->setUniform("roughness", m_roughness);
 
-  prim->draw("dragon");
+  prim->draw("teapot");
+  //m_mesh->draw();
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename) {
