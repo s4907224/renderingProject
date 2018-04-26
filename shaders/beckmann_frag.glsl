@@ -5,6 +5,9 @@ uniform mat4 MV;
 uniform mat4 MVP;
 uniform mat3 normalMatrix; // This is the inverse transpose of the MV matrix
 uniform mat4 invV;
+uniform vec3 lightPos[14];
+uniform vec3 lightCol[14];
+in vec3 worldPos;
 
 // The fragment position attribute
 layout (location=0) out vec4 FragColor;
@@ -60,11 +63,11 @@ vec3 beckmann(vec3 _n, vec3 _v, vec3 _s, float _roughness)
   float G = min(1.f, min(g1, g2));
 
   // Schlick approximation
-  float F0 = 0.01; // Fresnel reflectance at normal incidence
+  float F0 = 0.2; // Fresnel reflectance at normal incidence
   float F_r = pow(1.0 - VdotH, 5.0) * (1.0 - F0) + F0;
-  F0 = 0.01; // Fresnel reflectance at normal incidence
+  F0 = 0.2; // Fresnel reflectance at normal incidence
   float F_g = pow(1.0 - VdotH, 5.0) * (1.0 - F0) + F0;
-  F0 = 0.01; // Fresnel reflectance at normal incidence
+  F0 = 0.2; // Fresnel reflectance at normal incidence
   float F_b = pow(1.0 - VdotH, 5.0) * (1.0 - F0) + F0;
   vec3 F = vec3(F_r, F_g, F_b);
 
@@ -101,26 +104,30 @@ void main()
   float cosAngle = dot(n, normalValue);
   float angle = acos(cosAngle);
   //n = rotate(n,v,angle);
-
   vec3 p = FragmentPosition.xyz / FragmentPosition.w;
-  vec3 s = normalize(-reflect(v, n));
-  //s = normalize(Light1.Position).xyz;
-  vec3 lookup = -s;
-  lookup.x *= -1;
-  //lookup.z *= -1;
-  //lookup = (vec4(lookup, 1)).xyz;
-  vec3 brdf = beckmann(n, v, s, roughness);
-  vec3 specular = textureLod(envMap, lookup, 16 * roughness).rgb;
-  brdf = max(brdf, 0);
-  brdf = min(brdf, 1);
-  specular *= brdf;
+  vec3 lookup = (reflect(-v,n));
+  lookup.z *= -1;
+  lookup.y *= -1;
 
-  vec3 indirectDiffuse = textureLod(envMap, lookup, 16).rgb;
+  vec3 colour;
+  for(int i = 0; i < 14; i++)
+  {
+    float distance = length((lightPos[i] * 50) - worldPos.xyz);
+    float attenuation = 1.0 / (distance * distance);
+    vec3 s = normalize((lightPos[i] * 50) - worldPos.xyz);
+    vec3 brdf = beckmann(n, v, s, roughness);
+    vec3 specular = textureLod(envMap, lookup, roughness * 10.4).rgb;
+    brdf = max(brdf, 0);
+    brdf = min(brdf, 1);
+    specular *= brdf;
+    vec3 diffuse = lightCol[i] * 0.5 * max( dot(s, n), 0.0 );
+    colour += vec3(diffuse * 0.5 + 0.5 * specular);
+  }
 
-  vec3 lightSig =  indirectDiffuse + (specular) + Material.Ka;
+  //vec3 lightSig =  indirectDiffuse + (specular) + Material.Ka;
   //lightSig *= vec3(0.878431372549, 0.349019607843, 0.56862745098);
 
 
-  FragColor = vec4(specular , 1.f);
-  FragColor = vec4(indirectDiffuse, 1.f);
+  FragColor = vec4(colour , 1.f);
+  //FragColor = vec4(indirectDiffuse, 1.f);
 }

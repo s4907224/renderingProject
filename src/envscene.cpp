@@ -6,6 +6,7 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Image.h>
+#include <ngl/NGLStream.h>
 
 EnvScene::EnvScene() : Scene() {}
 
@@ -43,36 +44,6 @@ void EnvScene::initGL() noexcept {
 
     m_mesh = new ngl::Obj("models/usbtri.obj");
     m_mesh->createVAO();
-
-    m_lightPos = {{1.506f,    0.815f,   0.041f},
-                  {0.3079f,   0.609f,   -1.026f},
-                  {3.534f,    0.432f,   3.913f},
-                  {1.254f,    0.453f,   4.827f},
-                  {0.783f,    0.837f,   -0.679f},
-                  {0.783f,    0.239f,   -0.679f},
-                  {1.568f,    0.246f,   0.037f},
-                  {-0.069f,   0.031f,   -1.023f},
-                  {-3.215f,   0.069f,   1.761f},
-                  {-1.34f,    0.217f,   -1.599f},
-                  {0.073f,    -0.432f,  0.045f},
-                  {0.419f,    -0.106f,  0.675f},
-                  {0.091f,    0.822f,   1.05f},
-                  {-0.231f,   -0.938f,  1.825f}};
-
-    m_lightCol = {{,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,},
-                  {,,}};
 }
 
 void EnvScene::paintGL() noexcept
@@ -119,9 +90,8 @@ void EnvScene::paintGL() noexcept
   prim->draw("cube");
 
   glm::mat3 N;
-  M = glm::mat4();
   //M = glm::scale(M, glm::vec3(1.8f, 1.f, 1.8f));
-  //M = glm::scale(M, glm::vec3(0.1f, 0.1f, 0.1f));
+  M = glm::scale(M, glm::vec3(0.02f, 0.02f, 0.02f));
   //M = glm::translate(M, glm::vec3(0.f, -5.f, 0.f));
   //M = glm::rotate(M, float(M_PI/2.f), glm::vec3(1.f, 0.f, 0.f));
   MV = m_V * M;
@@ -139,7 +109,12 @@ void EnvScene::paintGL() noexcept
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(MV)); // a raw pointer to the data
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "M"), //location of uniform
+                     1, // how many matrices to transfer
+                     true, // whether to transpose matrix
+                     glm::value_ptr(M)); // a raw pointer to the data
   glUniformMatrix3fv(glGetUniformLocation(beckmannID, "normalMatrix"), //location of uniform
+
                      1, // how many matrices to transfer
                      true, // whether to transpose matrix
                      glm::value_ptr(N)); // a raw pointer to the data
@@ -147,10 +122,12 @@ void EnvScene::paintGL() noexcept
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
-  glUniform4fv(glGetUniformLocation(beckmannID, "lightPos"), //location of uniform
-                     14, // how many matrices to transfer
-                     false, // whether to transpose matrix
-                     glm::value_ptr(glm::inverse(m_lightPos))); // a raw pointer to the data
+
+  for(size_t i=0; i<m_lightPos.size(); i++)
+  {
+    shader->setUniform(("lightPos[" + std::to_string(i) + "]").c_str(),m_lightPos[i]);
+    shader->setUniform(("lightCol[" + std::to_string(i) + "]").c_str(),m_lightCol[i]);
+  }
 
   shader->setUniform("roughness", m_roughness);
 

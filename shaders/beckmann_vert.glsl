@@ -5,6 +5,7 @@ uniform mat4 MV;
 uniform mat4 MVP;
 uniform mat3 normalMatrix; // This is the inverse transpose of the MV matrix
 uniform mat4 invV;
+uniform mat4 M;
 
 // The vertex position attribute
 layout (location=0) in vec3 VertexPosition;
@@ -19,11 +20,13 @@ out vec4 FragmentPosition;
 out vec3 FragNormal;
 out vec3 wsFragmentPosition;
 out vec2 FragmentTexCoord;
+out vec3 worldPos;
 
 /************************************************************************************/
 void main() {
     // Set the position of the current vertex
     gl_Position = MVP * vec4(VertexPosition, 1.0);
+    worldPos = vec3(MV * vec4(VertexPosition, 1.0) );
     wsFragmentPosition = VertexPosition;
     FragmentPosition = gl_Position;
     FragNormal = normalize(normalMatrix * VertexNormal);

@@ -36,8 +36,35 @@ private:
 
     ngl::Obj *m_mesh;
 
-    glm::vec3 m_lightPos[14];
-    glm::vec3 m_lightCol[14];
+    std::array<ngl::Vec3, 14> m_lightPos = {ngl::Vec3( 1.506f, 0.815f, 0.041f),
+                                            ngl::Vec3( 0.079f, 0.609f,-1.026f),
+                                            ngl::Vec3( 3.534f, 0.432f, 3.913f),
+                                            ngl::Vec3( 1.254f, 0.453f, 4.827f),
+                                            ngl::Vec3( 0.783f, 0.837f,-0.679f),
+                                            ngl::Vec3( 0.783f, 0.239f,-0.679f),
+                                            ngl::Vec3( 1.568f, 0.246f, 0.037f),
+                                            ngl::Vec3(-0.069f, 0.031f,-1.023f),
+                                            ngl::Vec3(-3.215f, 0.069f, 1.761f),
+                                            ngl::Vec3(-1.340f, 0.217f,-1.599f),
+                                            ngl::Vec3( 0.073f,-0.432f, 0.045f),
+                                            ngl::Vec3( 0.419f,-0.106f, 0.675f),
+                                            ngl::Vec3( 0.091f, 0.822f, 1.050f),
+                                            ngl::Vec3(-0.231f,-0.938f, 1.825f)};
+
+    std::array<ngl::Vec3, 14> m_lightCol = {ngl::Vec3(0.551f, 0.887f, 1.000f),
+                                            ngl::Vec3(0.432f, 0.795f, 0.995f),
+                                            ngl::Vec3(0.485f, 0.542f, 0.562f),
+                                            ngl::Vec3(0.314f, 0.384f, 0.296f),
+                                            ngl::Vec3(0.390f, 0.735f, 0.999f),
+                                            ngl::Vec3(0.817f, 0.915f, 1.000f),
+                                            ngl::Vec3(0.443f, 0.575f, 0.739f),
+                                            ngl::Vec3(0.187f, 0.249f, 0.317f),
+                                            ngl::Vec3(0.152f, 0.197f, 0.237f),
+                                            ngl::Vec3(0.270f, 0.238f, 0.158f),
+                                            ngl::Vec3(0.084f, 0.098f, 0.045f),
+                                            ngl::Vec3(0.223f, 0.331f, 0.407f),
+                                            ngl::Vec3(0.209f, 0.188f, 0.150f),
+                                            ngl::Vec3(0.441f, 0.376f, 0.276f)};
 };
 
 #endif // MYSCENE_H
