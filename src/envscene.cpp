@@ -120,8 +120,8 @@ void EnvScene::paintGL() noexcept
                      glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
   shader->setUniform("roughness", m_roughness);
 
-  prim->draw("teapot");
-  //m_mesh->draw();
+  //prim->draw("teapot");
+  m_mesh->draw();
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename) {

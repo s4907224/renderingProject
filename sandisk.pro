@@ -3,7 +3,7 @@
 ######################################################################
 
 include(common.pri)
-TARGET = doughnut
+TARGET = sandisk
 
 OBJECTS_DIR = obj
 
