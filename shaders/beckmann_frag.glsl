@@ -121,6 +121,6 @@ void main()
   //lightSig *= vec3(0.878431372549, 0.349019607843, 0.56862745098);
 
 
-  FragColor = vec4(lightSig , 1.f);
+  FragColor = vec4(specular , 1.f);
   FragColor = vec4(indirectDiffuse, 1.f);
 }

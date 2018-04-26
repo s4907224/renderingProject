@@ -43,6 +43,36 @@ void EnvScene::initGL() noexcept {
 
     m_mesh = new ngl::Obj("models/usbtri.obj");
     m_mesh->createVAO();
+
+    m_lightPos = {{1.506f,    0.815f,   0.041f},
+                  {0.3079f,   0.609f,   -1.026f},
+                  {3.534f,    0.432f,   3.913f},
+                  {1.254f,    0.453f,   4.827f},
+                  {0.783f,    0.837f,   -0.679f},
+                  {0.783f,    0.239f,   -0.679f},
+                  {1.568f,    0.246f,   0.037f},
+                  {-0.069f,   0.031f,   -1.023f},
+                  {-3.215f,   0.069f,   1.761f},
+                  {-1.34f,    0.217f,   -1.599f},
+                  {0.073f,    -0.432f,  0.045f},
+                  {0.419f,    -0.106f,  0.675f},
+                  {0.091f,    0.822f,   1.05f},
+                  {-0.231f,   -0.938f,  1.825f}};
+
+    m_lightCol = {{,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,},
+                  {,,}};
 }
 
 void EnvScene::paintGL() noexcept
@@ -98,7 +128,6 @@ void EnvScene::paintGL() noexcept
   MVP = m_P * MV;
   N = glm::inverse(glm::mat3(MV));
 
-  //normalMatrix = glm::inverse(normalMatrix);
   (*shader)["BeckmannProgram"]->use();
   GLint beckmannID = shader->getProgramID("BeckmannProgram");
   // Set this MVP on the GPU
@@ -114,10 +143,15 @@ void EnvScene::paintGL() noexcept
                      1, // how many matrices to transfer
                      true, // whether to transpose matrix
                      glm::value_ptr(N)); // a raw pointer to the data
-  glUniformMatrix4fv(glGetUniformLocation(envID, "invV"), //location of uniform
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "invV"), //location of uniform
                      1, // how many matrices to transfer
                      false, // whether to transpose matrix
                      glm::value_ptr(glm::inverse(m_V))); // a raw pointer to the data
+  glUniform4fv(glGetUniformLocation(beckmannID, "lightPos"), //location of uniform
+                     14, // how many matrices to transfer
+                     false, // whether to transpose matrix
+                     glm::value_ptr(glm::inverse(m_lightPos))); // a raw pointer to the data
+
   shader->setUniform("roughness", m_roughness);
 
   //prim->draw("teapot");

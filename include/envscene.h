@@ -35,6 +35,9 @@ private:
     GLuint m_fboID, m_fboTextureID, m_fboDepthID;
 
     ngl::Obj *m_mesh;
+
+    glm::vec3 m_lightPos[14];
+    glm::vec3 m_lightCol[14];
 };
 
 #endif // MYSCENE_H
