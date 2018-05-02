@@ -1,0 +1,227 @@
+#include "sandiskscene.h"
+
+#include <glm/gtc/type_ptr.hpp>
+#include <ngl/Obj.h>
+#include <ngl/NGLInit.h>
+#include <ngl/VAOPrimitives.h>
+#include <ngl/ShaderLib.h>
+#include <ngl/Image.h>
+#include <ngl/NGLStream.h>
+
+EnvScene::EnvScene() : Scene() {}
+
+void EnvScene::initGL() noexcept {
+    ngl::NGLInit::instance();
+    glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+    ngl::ShaderLib *shader=ngl::ShaderLib::instance();
+    shader->loadShader("EnvironmentProgram",
+                       "shaders/env_vert.glsl",
+                       "shaders/env_frag.glsl");
+
+    shader->loadShader("BeckmannProgram",
+                       "shaders/beckmann_vert.glsl",
+                       "shaders/beckmann_frag.glsl");
+
+    initEnvironment();
+    m_roughness = 0.5f;
+    m_mesh = new ngl::Obj("models/usbtri.obj");
+    m_mesh->createVAO();
+}
+
+void EnvScene::paintGL() noexcept
+{
+  //Draw depth texture to FBO.
+  m_fboID = 0;
+  glGenFramebuffers(1, &m_fboID);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
+
+  glGenTextures(1, &m_fboTextureID);
+  glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_fboTextureID, 0);
+  glDrawBuffer(GL_NONE);
+
+  glm::mat4 depthProjection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+  glm::mat4 depthView = glm::lookAt(m_lightPos[0], glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+  glm::mat4 depthModel;
+
+  glm::mat4 depthMPV = depthProjection * depthView * depthModel;
+
+  //Draw to the screen.
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glViewport(0,0,m_width,m_height);
+
+  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
+
+  loadEnvironmentUniforms();
+  prim->draw("cube");
+
+  loadMemoryStickUniforms();
+  m_mesh->draw();
+}
+
+void EnvScene::loadEnvironmentUniforms()
+{
+  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
+  shader->use("EnvironmentProgram");
+  GLint envID = shader->getProgramID("EnvironmentProgram");
+
+  glm::mat4 M, MV, MVP;
+  glm::mat3 N;
+
+  M = glm::scale(M, glm::vec3(50.f, 50.f, 50.f));
+  MV = m_V2 * M;
+  MVP = m_P * MV;
+  N = glm::inverse(glm::mat3(MV));
+
+  glUniformMatrix4fv(glGetUniformLocation(envID, "MVP"),
+                     1,
+                     false,
+                     glm::value_ptr(MVP));
+  glUniformMatrix4fv(glGetUniformLocation(envID, "MV"),
+                     1,
+                     false,
+                     glm::value_ptr(MV));
+  glUniformMatrix4fv(glGetUniformLocation(envID, "normalMatrix"),
+                     1,
+                     false,
+                     glm::value_ptr(N));
+  glUniformMatrix4fv(glGetUniformLocation(envID, "invV"),
+                     1,
+                     false,
+                     glm::value_ptr(glm::inverse(m_V)));
+}
+
+void EnvScene::loadMemoryStickUniforms()
+{
+  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
+  shader->use("BeckmannProgram");
+  GLint beckmannID = shader->getProgramID("BeckmannProgram");
+
+  glm::mat3 N;
+  glm::mat4 M, MV, MVP;
+
+  M = glm::scale(M, glm::vec3(0.1f, 0.1f, 0.1f));
+  MV = m_V * M;
+  MVP = m_P * MV;
+  N = glm::inverse(glm::mat3(MV));
+
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "MVP"),
+                     1,
+                     false,
+                     glm::value_ptr(MVP));
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "MV"),
+                     1,
+                     false,
+                     glm::value_ptr(MV));
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "M"),
+                     1,
+                     true,
+                     glm::value_ptr(M));
+  glUniformMatrix3fv(glGetUniformLocation(beckmannID, "normalMatrix"),
+                     1,
+                     true,
+                     glm::value_ptr(N));
+  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "invV"),
+                     1,
+                     false,
+                     glm::value_ptr(glm::inverse(m_V)));
+
+  for(size_t i=0; i<m_lightPos.size(); i++)
+  {
+    glUniform3fv(glGetUniformLocation(beckmannID, ("lightPos[" + std::to_string(i) + "]").c_str()),
+                 3,
+                 glm::value_ptr(m_lightPos[i]));
+    glUniform3fv(glGetUniformLocation(beckmannID, ("lightCol[" + std::to_string(i) + "]").c_str()),
+                 3,
+                 glm::value_ptr(m_lightCol[i]));
+  }
+  glUniform1fv(glGetUniformLocation(beckmannID, "roughness"),
+               1,
+               &m_roughness);
+}
+
+void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename)
+{
+    glActiveTexture(GL_TEXTURE0 + texUnit);
+
+    ngl::Image img(filename);
+
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    glTexImage2D (
+                GL_TEXTURE_2D,    // The target (in this case, which side of the cube)
+                0,                // Level of mipmap to load
+                img.format(),     // Internal format (number of colour components)
+                img.width(),      // Width in pixels
+                img.height(),     // Height in pixels
+                0,                // Border
+                img.format(),     // Format of the pixel data
+                GL_UNSIGNED_BYTE, // Data type of pixel data
+                img.getPixels()); // Pointer to image data in memory
+
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void EnvScene::initEnvironment()
+{
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &m_envTex);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_envTex);
+
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "images/nz.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "images/pz.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, "images/ny.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "images/py.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, "images/nx.png");
+    initEnvironmentSide(GL_TEXTURE_CUBE_MAP_POSITIVE_X, "images/px.png");
+
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_GENERATE_MIPMAP, GL_TRUE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    GLfloat anisotropy;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropy);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+
+    ngl::ShaderLib *shader=ngl::ShaderLib::instance();
+    shader->use("EnvironmentProgram");
+    shader->setUniform("envMap", 0);
+    shader->use("BeckmannProgram");
+    shader->setUniform("envMap", 0);
+}
+
+void EnvScene::initEnvironmentSide(GLenum target, const char *filename)
+{
+    ngl::Image img(filename);
+
+    glTexImage2D (
+      target,           // The target (in this case, which side of the cube)
+      0,                // Level of mipmap to load
+      img.format(),     // Internal format (number of colour components)
+      img.width(),      // Width in pixels
+      img.height(),     // Height in pixels
+      0,                // Border
+      img.format(),     // Format of the pixel data
+      GL_UNSIGNED_BYTE, // Data type of pixel data
+      img.getPixels()   // Pointer to image data in memory
+    );
+}

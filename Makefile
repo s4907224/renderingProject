@@ -14,7 +14,7 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT5BUILD -DNGL_DEBUG -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -msse -msse2 -msse3 -march=native -march=native -g -std=gnu++11 -Wall -W -Wno-unused-parameter -D_REENTRANT -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -msse -msse2 -msse3 -march=native -march=native -g -std=gnu++1y -Wall -W -Wno-unused-parameter -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I/home/cglover/NGL/include -I/home/cglover/libigl/include -I/home/cglover/eigen -I/home/cglover/rendering_examples/common/packages/noise/src -I/home/cglover/NGL/include -Iinclude -I/home/cglover/Qt/5.9/gcc_64/include -I/home/cglover/Qt/5.9/gcc_64/include/QtOpenGL -I/home/cglover/Qt/5.9/gcc_64/include/QtWidgets -I/home/cglover/Qt/5.9/gcc_64/include/QtGui -I/home/cglover/Qt/5.9/gcc_64/include/QtCore -Imoc -isystem /usr/include/libdrm -I/home/cglover/Qt/5.9/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/cglover/Qt/5.9/gcc_64/bin/qmake
 DEL_FILE      = rm -f
@@ -52,13 +52,13 @@ OBJECTS_DIR   = obj/
 ####### Files
 
 SOURCES       = src/main.cpp \
-		src/envscene.cpp \
+		src/sandiskscene.cpp \
 		src/camera.cpp \
 		src/fixedcamera.cpp \
 		src/scene.cpp \
 		src/trackballcamera.cpp 
 OBJECTS       = obj/main.o \
-		obj/envscene.o \
+		obj/sandiskscene.o \
 		obj/camera.o \
 		obj/fixedcamera.o \
 		obj/scene.o \
@@ -66,12 +66,12 @@ OBJECTS       = obj/main.o \
 DIST          = $OTHER_FILES \
 		.qmake.stash \
 		common.pri \
-		sandisk.pro include/envscene.h \
+		sandisk.pro include/sandiskscene.h \
 		include/camera.h \
 		include/fixedcamera.h \
 		include/scene.h \
 		include/trackballcamera.h src/main.cpp \
-		src/envscene.cpp \
+		src/sandiskscene.cpp \
 		src/camera.cpp \
 		src/fixedcamera.cpp \
 		src/scene.cpp \
@@ -477,8 +477,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /home/cglover/Qt/5.9/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/envscene.h include/camera.h include/fixedcamera.h include/scene.h include/trackballcamera.h $(DISTDIR)/
-	$(COPY_FILE) --parents src/main.cpp src/envscene.cpp src/camera.cpp src/fixedcamera.cpp src/scene.cpp src/trackballcamera.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/sandiskscene.h include/camera.h include/fixedcamera.h include/scene.h include/trackballcamera.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/main.cpp src/sandiskscene.cpp src/camera.cpp src/fixedcamera.cpp src/scene.cpp src/trackballcamera.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -508,7 +508,7 @@ compiler_moc_predefs_make_all: moc/moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc/moc_predefs.h
 moc/moc_predefs.h: /home/cglover/Qt/5.9/gcc_64/mkspecs/features/data/dummy.cpp
-	g++ -pipe -msse -msse2 -msse3 -march=native -march=native -g -std=gnu++11 -Wall -W -Wno-unused-parameter -dM -E -o moc/moc_predefs.h /home/cglover/Qt/5.9/gcc_64/mkspecs/features/data/dummy.cpp
+	g++ -pipe -msse -msse2 -msse3 -march=native -march=native -g -std=gnu++1y -Wall -W -Wno-unused-parameter -dM -E -o moc/moc_predefs.h /home/cglover/Qt/5.9/gcc_64/mkspecs/features/data/dummy.cpp
 
 compiler_moc_header_make_all:
 compiler_moc_header_clean:
@@ -526,142 +526,13 @@ compiler_clean: compiler_moc_predefs_clean
 
 ####### Compile
 
-obj/main.o: src/main.cpp include/envscene.h \
-		/home/cglover/NGL/include/ngl/Obj.h \
-		/home/cglover/NGL/include/ngl/Types.h \
-		/home/cglover/NGL/include/ngl/glew.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtOpenGL/QGLContext \
-		/home/cglover/Qt/5.9/gcc_64/include/QtOpenGL/qgl.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qopengl.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qtguiglobal.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qglobal.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qconfig-bootstrapped.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qconfig.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qtcore-config.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qsysinfo.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qlogging.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qflags.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qatomic.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qmutex.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qnumeric.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qversiontagging.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qtgui-config.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qt_windows.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qopengles2ext.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qopenglext.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtWidgets/qwidget.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtWidgets/qtwidgets-config.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qnamespace.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qobject.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qstring.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qchar.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qbytearray.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qrefcount.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qarraydata.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qlist.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qalgorithms.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qiterator.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qpair.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qstringlist.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qregexp.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qcoreevent.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qmetatype.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qobject_impl.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qmargins.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qrect.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qsize.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qpoint.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpalette.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qcolor.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qrgb.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qrgba64.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qbrush.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qvector.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qmatrix.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpolygon.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qregion.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qdatastream.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qiodevice.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qline.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qtransform.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpainterpath.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qimage.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpixelformat.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpixmap.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qshareddata.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qhash.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qfont.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qfontinfo.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qcursor.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qkeysequence.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qevent.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qvariant.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qmap.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qdebug.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qtextstream.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qlocale.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qset.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qurl.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qurlquery.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qfile.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtCore/qfiledevice.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qvector2d.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpaintengine.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpainter.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qtextoption.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qpen.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtOpenGL/qglcolormap.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtOpenGL/qtopenglglobal.h \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/QSurfaceFormat \
-		/home/cglover/Qt/5.9/gcc_64/include/QtGui/qsurfaceformat.h \
-		/home/cglover/NGL/include/ngl/Texture.h \
-		/home/cglover/NGL/include/ngl/Image.h \
-		/home/cglover/NGL/include/ngl/Colour.h \
-		/home/cglover/NGL/include/ngl/Vec4.h \
-		/home/cglover/NGL/include/ngl/Vec2.h \
-		/home/cglover/NGL/include/ngl/Vec3.h \
-		/home/cglover/NGL/include/ngl/AbstractMesh.h \
-		/home/cglover/NGL/include/ngl/BBox.h \
-		/home/cglover/NGL/include/ngl/AbstractVAO.h \
-		/home/cglover/NGL/include/ngl/RibExport.h \
-		/home/cglover/NGL/include/ngl/NGLassert.h \
-		include/scene.h \
-		include/glinclude.h \
+obj/main.o: src/main.cpp include/glinclude.h \
 		include/fixedcamera.h \
 		include/camera.h \
 		include/trackballcamera.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/main.o src/main.cpp
 
-obj/envscene.o: src/envscene.cpp include/envscene.h \
+obj/sandiskscene.o: src/sandiskscene.cpp include/sandiskscene.h \
 		/home/cglover/NGL/include/ngl/Obj.h \
 		/home/cglover/NGL/include/ngl/Types.h \
 		/home/cglover/NGL/include/ngl/glew.h \
@@ -799,8 +670,9 @@ obj/envscene.o: src/envscene.cpp include/envscene.h \
 		/home/cglover/NGL/include/ngl/ShaderProgram.h \
 		/home/cglover/NGL/include/ngl/Util.h \
 		/home/cglover/NGL/include/ngl/Mat3.h \
-		/home/cglover/NGL/include/ngl/Mat4.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/envscene.o src/envscene.cpp
+		/home/cglover/NGL/include/ngl/Mat4.h \
+		/home/cglover/NGL/include/ngl/NGLStream.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/sandiskscene.o src/sandiskscene.cpp
 
 obj/camera.o: src/camera.cpp include/camera.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/camera.o src/camera.cpp

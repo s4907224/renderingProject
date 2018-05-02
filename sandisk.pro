@@ -15,12 +15,12 @@ INCLUDEPATH +=./include
 DESTDIR=./
 
 # Input
-HEADERS += include/envscene.h \
+HEADERS += include/sandiskscene.h \
            include/camera.h \
            include/fixedcamera.h \
            include/scene.h \
            include/trackballcamera.h
-SOURCES += src/main.cpp src/envscene.cpp \
+SOURCES += src/main.cpp src/sandiskscene.cpp \
            src/camera.cpp \
            src/fixedcamera.cpp \
            src/scene.cpp \
