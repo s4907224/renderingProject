@@ -24,6 +24,16 @@ void EnvScene::initGL() noexcept {
                        "shaders/beckmann_vert.glsl",
                        "shaders/beckmann_frag.glsl");
 
+    shader->loadShader("ShadowProgram",
+                       "shaders/shadow_vert.glsl",
+                       "shaders/shadow_frag.glsl");
+
+    std::cout<<"glGetUniformLocation(m_beckmannID, \"envMap\") = "<<glGetUniformLocation(m_beckmannID, "envMap")<<'\n';
+    std::cout<<"glGetUniformLocation(m_beckmannID, \"MVP\") = "<<glGetUniformLocation(m_beckmannID, "MVP")<<'\n';
+    m_environmentID = shader->getProgramID("EnvironmentProgram");
+    m_beckmannID = shader->getProgramID("BeckmannProgram");
+    m_shadowID = shader->getProgramID("ShadowProgram");
+
     initEnvironment();
     m_roughness = 0.5f;
     m_mesh = new ngl::Obj("models/usbtri.obj");
@@ -53,6 +63,11 @@ void EnvScene::paintGL() noexcept
 
   glm::mat4 depthMPV = depthProjection * depthView * depthModel;
 
+  glUniformMatrix4fv(glGetUniformLocation(m_shadowID, "MVP"),
+                     4,
+                     false,
+                     glm::value_ptr(depthMPV));
+
   //Draw to the screen.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glActiveTexture(GL_TEXTURE1);
@@ -73,7 +88,6 @@ void EnvScene::loadEnvironmentUniforms()
 {
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   shader->use("EnvironmentProgram");
-  GLint envID = shader->getProgramID("EnvironmentProgram");
 
   glm::mat4 M, MV, MVP;
   glm::mat3 N;
@@ -83,19 +97,19 @@ void EnvScene::loadEnvironmentUniforms()
   MVP = m_P * MV;
   N = glm::inverse(glm::mat3(MV));
 
-  glUniformMatrix4fv(glGetUniformLocation(envID, "MVP"),
+  glUniformMatrix4fv(glGetUniformLocation(m_environmentID, "MVP"),
                      1,
                      false,
                      glm::value_ptr(MVP));
-  glUniformMatrix4fv(glGetUniformLocation(envID, "MV"),
+  glUniformMatrix4fv(glGetUniformLocation(m_environmentID, "MV"),
                      1,
                      false,
                      glm::value_ptr(MV));
-  glUniformMatrix4fv(glGetUniformLocation(envID, "normalMatrix"),
+  glUniformMatrix4fv(glGetUniformLocation(m_environmentID, "normalMatrix"),
                      1,
                      false,
                      glm::value_ptr(N));
-  glUniformMatrix4fv(glGetUniformLocation(envID, "invV"),
+  glUniformMatrix4fv(glGetUniformLocation(m_environmentID, "invV"),
                      1,
                      false,
                      glm::value_ptr(glm::inverse(m_V)));
@@ -105,7 +119,6 @@ void EnvScene::loadMemoryStickUniforms()
 {
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   shader->use("BeckmannProgram");
-  GLint beckmannID = shader->getProgramID("BeckmannProgram");
 
   glm::mat3 N;
   glm::mat4 M, MV, MVP;
@@ -115,39 +128,42 @@ void EnvScene::loadMemoryStickUniforms()
   MVP = m_P * MV;
   N = glm::inverse(glm::mat3(MV));
 
-  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "MVP"),
+  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "MVP"),
                      1,
                      false,
                      glm::value_ptr(MVP));
-  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "MV"),
+  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "MV"),
                      1,
                      false,
                      glm::value_ptr(MV));
-  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "M"),
+  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "M"),
                      1,
                      true,
                      glm::value_ptr(M));
-  glUniformMatrix3fv(glGetUniformLocation(beckmannID, "normalMatrix"),
+  glUniformMatrix3fv(glGetUniformLocation(m_beckmannID, "normalMatrix"),
                      1,
                      true,
                      glm::value_ptr(N));
-  glUniformMatrix4fv(glGetUniformLocation(beckmannID, "invV"),
+  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "invV"),
                      1,
                      false,
                      glm::value_ptr(glm::inverse(m_V)));
 
   for(size_t i=0; i<m_lightPos.size(); i++)
   {
-    glUniform3fv(glGetUniformLocation(beckmannID, ("lightPos[" + std::to_string(i) + "]").c_str()),
+    glUniform3fv(glGetUniformLocation(m_beckmannID, ("lightPos[" + std::to_string(i) + "]").c_str()),
                  3,
                  glm::value_ptr(m_lightPos[i]));
-    glUniform3fv(glGetUniformLocation(beckmannID, ("lightCol[" + std::to_string(i) + "]").c_str()),
+    glUniform3fv(glGetUniformLocation(m_beckmannID, ("lightCol[" + std::to_string(i) + "]").c_str()),
                  3,
                  glm::value_ptr(m_lightCol[i]));
   }
-  glUniform1fv(glGetUniformLocation(beckmannID, "roughness"),
-               1,
-               &m_roughness);
+  glUniform1f(glGetUniformLocation(m_beckmannID, "roughness"),
+               m_roughness);
+  std::cout<<"glGetUniformLocation(m_beckmannID, \"envMap\") = "<<glGetUniformLocation(m_beckmannID, "envMap")<<'\n';
+  std::cout<<"glGetUniformLocation(m_beckmannID, \"MVP\") = "<<glGetUniformLocation(m_beckmannID, "MVP")<<'\n';
+  std::cout<<"glGetUniformLocation(m_beckmannID, \"MV\") = "<<glGetUniformLocation(m_beckmannID, "MV")<<'\n';
+  std::cout<<"glGetUniformLocation(m_beckmannID, \"normalMatrix\") = "<<glGetUniformLocation(m_beckmannID, "normalMatrix")<<'\n';
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename)

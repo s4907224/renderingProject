@@ -1,4 +1,4 @@
-#version 420 core
+#version 430 core
 
 // Attributes passed on from the vertex shader
 smooth in vec3 FragmentPosition;

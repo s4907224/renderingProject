@@ -1,5 +1,5 @@
 // Must include our scene first because of GL dependency order
-#include "envscene.h"
+#include "sandiskscene.h"
 
 // This will probably already be included by a scene file
 #include "glinclude.h"

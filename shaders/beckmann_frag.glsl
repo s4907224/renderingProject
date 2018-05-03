@@ -7,28 +7,11 @@ uniform mat3 normalMatrix; // This is the inverse transpose of the MV matrix
 uniform mat4 invV;
 uniform vec3 lightPos[14];
 uniform vec3 lightCol[14];
+layout(binding=1) uniform sampler2D shadowMap;
 in vec3 worldPos;
 
 // The fragment position attribute
 layout (location=0) out vec4 FragColor;
-
-// The material properties of our object
-struct MaterialInfo
-{
-    vec3 Ka; // Ambient reflectivity
-    vec3 Kd; // Diffuse reflectivity
-    vec3 Ks; // Specular reflectivity
-    float Shininess; // Specular shininess factor
-};
-
-// The object has a material
-uniform MaterialInfo Material = MaterialInfo
-(
-  vec3(0.1, 0.1, 0.1),    // Ka
-  vec3(1.0, 1.0, 1.0),    // Kd
-  vec3(1.0, 1.0, 1.0),    // Ks
-  10.0                  // Shininess
-);
 
 // This is passed on from the vertex shader
 in vec3 FragNormal;
@@ -129,5 +112,6 @@ void main()
 
 
   FragColor = vec4(colour , 1.f);
+  FragColor = texture(shadowMap, FragmentTexCoord);
   //FragColor = vec4(indirectDiffuse, 1.f);
 }

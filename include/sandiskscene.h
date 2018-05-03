@@ -20,6 +20,8 @@ class EnvScene : public Scene
     GLuint m_envTex;
     /// @brief IDs for FBO.
     GLuint m_fboID, m_fboTextureID, m_fboDepthID;
+    /// @brief IDs for shaders.
+    GLint m_environmentID, m_beckmannID, m_shadowID;
     /// @brief Pointer to the OBJ.
     ngl::Obj *m_mesh;
     /// @brief Array of light positions.

@@ -1,4 +1,4 @@
-#version 420
+#version 430
 
 // The vertex position attribute
 layout (location=0) in vec3 VertexPosition;
