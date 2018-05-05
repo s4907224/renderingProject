@@ -88,11 +88,11 @@ void key_callback(GLFWwindow* window, int key, int /*scancode*/, int action, int
        g_scene.m_roughness += 0.05f;
        std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
       }
-      else
-      {
-        g_scene.m_roughness = 1.f;
-        std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
-      }
+    else
+    {
+      g_scene.m_roughness = 1.f;
+      std::cout<<"Roughness = "<<g_scene.m_roughness<<'\n';
+    }
     }
         else {
         // Any other keypress should be handled by our camera

@@ -28,8 +28,6 @@ void EnvScene::initGL() noexcept {
                        "shaders/shadow_vert.glsl",
                        "shaders/shadow_frag.glsl");
 
-    std::cout<<"glGetUniformLocation(m_beckmannID, \"envMap\") = "<<glGetUniformLocation(m_beckmannID, "envMap")<<'\n';
-    std::cout<<"glGetUniformLocation(m_beckmannID, \"MVP\") = "<<glGetUniformLocation(m_beckmannID, "MVP")<<'\n';
     m_environmentID = shader->getProgramID("EnvironmentProgram");
     m_beckmannID = shader->getProgramID("BeckmannProgram");
     m_shadowID = shader->getProgramID("ShadowProgram");
@@ -43,35 +41,9 @@ void EnvScene::initGL() noexcept {
 void EnvScene::paintGL() noexcept
 {
   //Draw depth texture to FBO.
-  m_fboID = 0;
-  glGenFramebuffers(1, &m_fboID);
-  glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
-
-  glGenTextures(1, &m_fboTextureID);
-  glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_fboTextureID, 0);
-  glDrawBuffer(GL_NONE);
-
-  glm::mat4 depthProjection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
-  glm::mat4 depthView = glm::lookAt(m_lightPos[0], glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-  glm::mat4 depthModel;
-
-  glm::mat4 depthMPV = depthProjection * depthView * depthModel;
-
-  glUniformMatrix4fv(glGetUniformLocation(m_shadowID, "MVP"),
-                     4,
-                     false,
-                     glm::value_ptr(depthMPV));
 
   //Draw to the screen.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, m_fboTextureID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
 
@@ -160,10 +132,13 @@ void EnvScene::loadMemoryStickUniforms()
   }
   glUniform1f(glGetUniformLocation(m_beckmannID, "roughness"),
                m_roughness);
-  std::cout<<"glGetUniformLocation(m_beckmannID, \"envMap\") = "<<glGetUniformLocation(m_beckmannID, "envMap")<<'\n';
-  std::cout<<"glGetUniformLocation(m_beckmannID, \"MVP\") = "<<glGetUniformLocation(m_beckmannID, "MVP")<<'\n';
-  std::cout<<"glGetUniformLocation(m_beckmannID, \"MV\") = "<<glGetUniformLocation(m_beckmannID, "MV")<<'\n';
-  std::cout<<"glGetUniformLocation(m_beckmannID, \"normalMatrix\") = "<<glGetUniformLocation(m_beckmannID, "normalMatrix")<<'\n';
+
+  glm::vec3 diffuseCol;
+  diffuseCol = glm::vec3(0.4f, 0.4f, 1.f);
+
+  glUniform3fv(glGetUniformLocation(m_beckmannID, "diffuseColour"),
+               1,
+               glm::value_ptr(diffuseCol));
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename)

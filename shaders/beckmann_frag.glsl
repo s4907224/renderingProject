@@ -7,13 +7,13 @@ uniform mat3 normalMatrix; // This is the inverse transpose of the MV matrix
 uniform mat4 invV;
 uniform vec3 lightPos[14];
 uniform vec3 lightCol[14];
-layout(binding=1) uniform sampler2D shadowMap;
-in vec3 worldPos;
+uniform vec3 diffuseColour;
 
 // The fragment position attribute
 layout (location=0) out vec4 FragColor;
 
 // This is passed on from the vertex shader
+in vec3 worldPos;
 in vec3 FragNormal;
 in vec4 FragmentPosition;
 in vec2 FragmentTexCoord;
@@ -99,12 +99,12 @@ void main()
     float attenuation = 1.0 / (distance * distance);
     vec3 s = normalize((lightPos[i] * 50) - worldPos.xyz);
     vec3 brdf = beckmann(n, v, s, roughness);
-    vec3 specular = textureLod(envMap, lookup, roughness * 10.4).rgb;
+    vec3 specular = textureLod(envMap, lookup, roughness * 10.4f).rgb;
     brdf = max(brdf, 0);
     brdf = min(brdf, 1);
     specular *= brdf;
-    vec3 diffuse = lightCol[i] * 0.5 * max( dot(s, n), 0.0 );
-    colour += vec3(diffuse * 0.5 + 0.5 * specular);
+    vec3 diffuse = lightCol[i] * 0.5f * max( dot(s, n), 0.0 );
+    colour += vec3((diffuse * 0.5f * diffuseColour) + (specular * 0.5f));
   }
 
   //vec3 lightSig =  indirectDiffuse + (specular) + Material.Ka;
@@ -112,6 +112,5 @@ void main()
 
 
   FragColor = vec4(colour , 1.f);
-  FragColor = texture(shadowMap, FragmentTexCoord);
   //FragColor = vec4(indirectDiffuse, 1.f);
 }
