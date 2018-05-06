@@ -188,6 +188,7 @@ int main() {
         g_scene.setViewMatrix(g_camera.viewMatrix());
         g_scene.setProjMatrix(g_camera.projMatrix());
         g_scene.setView2Matrix(g_camera.view2Matrix());
+        g_scene.setEyePosition(g_camera.getTransformedEye());
 
         // Draw our GL stuff
         g_scene.paintGL();

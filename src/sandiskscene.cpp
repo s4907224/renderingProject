@@ -15,6 +15,9 @@ void EnvScene::initGL() noexcept {
     glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     ngl::ShaderLib *shader=ngl::ShaderLib::instance();
     shader->loadShader("EnvironmentProgram",
                        "shaders/env_vert.glsl",
@@ -32,10 +35,32 @@ void EnvScene::initGL() noexcept {
     m_beckmannID = shader->getProgramID("BeckmannProgram");
     m_shadowID = shader->getProgramID("ShadowProgram");
 
+    shader->use("BeckmannProgram");
+    initTexture(3, m_normalMapTex, "images/bump2.jpg");
+    shader->setUniform("normalMap", 3);
+
     initEnvironment();
     m_roughness = 0.5f;
-    m_mesh = new ngl::Obj("models/usbtri.obj");
-    m_mesh->createVAO();
+
+    m_usbMeshes[0].mesh = new ngl::Obj("models/blackPlastic.obj");
+    m_usbMeshes[0].shaderID = m_beckmannID;
+
+    m_usbMeshes[1].mesh = new ngl::Obj("models/bluePlastic.obj");
+    m_usbMeshes[1].shaderID = m_beckmannID;
+
+    m_usbMeshes[2].mesh = new ngl::Obj("models/gold.obj");
+    m_usbMeshes[2].shaderID = m_beckmannID;
+
+    m_usbMeshes[3].mesh = new ngl::Obj("models/metal.obj");
+    m_usbMeshes[3].shaderID = m_beckmannID;
+
+    m_usbMeshes[4].mesh = new ngl::Obj("models/translucentPlastic.obj");
+    m_usbMeshes[4].shaderID = m_beckmannID;
+
+    for (auto &i : m_usbMeshes)
+    {
+      i.mesh->createVAO();
+    }
 }
 
 void EnvScene::paintGL() noexcept
@@ -52,8 +77,11 @@ void EnvScene::paintGL() noexcept
   loadEnvironmentUniforms();
   prim->draw("cube");
 
-  loadMemoryStickUniforms();
-  m_mesh->draw();
+  for (auto &i : m_usbMeshes)
+  {
+    loadMemoryStickUniforms(i);
+    i.mesh->draw();
+  }
 }
 
 void EnvScene::loadEnvironmentUniforms()
@@ -87,10 +115,9 @@ void EnvScene::loadEnvironmentUniforms()
                      glm::value_ptr(glm::inverse(m_V)));
 }
 
-void EnvScene::loadMemoryStickUniforms()
+void EnvScene::loadMemoryStickUniforms(USBmesh _mesh)
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->use("BeckmannProgram");
+  glUseProgram(_mesh.shaderID);
 
   glm::mat3 N;
   glm::mat4 M, MV, MVP;
@@ -100,45 +127,59 @@ void EnvScene::loadMemoryStickUniforms()
   MVP = m_P * MV;
   N = glm::inverse(glm::mat3(MV));
 
-  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "MVP"),
+  glUniformMatrix4fv(glGetUniformLocation(_mesh.shaderID, "MVP"),
                      1,
                      false,
                      glm::value_ptr(MVP));
-  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "MV"),
+  glUniformMatrix4fv(glGetUniformLocation(_mesh.shaderID, "MV"),
                      1,
                      false,
                      glm::value_ptr(MV));
-  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "M"),
-                     1,
-                     true,
-                     glm::value_ptr(M));
-  glUniformMatrix3fv(glGetUniformLocation(m_beckmannID, "normalMatrix"),
+  glUniformMatrix3fv(glGetUniformLocation(_mesh.shaderID, "normalMatrix"),
                      1,
                      true,
                      glm::value_ptr(N));
-  glUniformMatrix4fv(glGetUniformLocation(m_beckmannID, "invV"),
-                     1,
-                     false,
-                     glm::value_ptr(glm::inverse(m_V)));
+  glUniform3fv(glGetUniformLocation(_mesh.shaderID, "eyePos"),
+               1,
+               glm::value_ptr(m_eyePos));
 
   for(size_t i=0; i<m_lightPos.size(); i++)
   {
-    glUniform3fv(glGetUniformLocation(m_beckmannID, ("lightPos[" + std::to_string(i) + "]").c_str()),
+    glUniform3fv(glGetUniformLocation(_mesh.shaderID, ("lightPos[" + std::to_string(i) + "]").c_str()),
                  3,
                  glm::value_ptr(m_lightPos[i]));
-    glUniform3fv(glGetUniformLocation(m_beckmannID, ("lightCol[" + std::to_string(i) + "]").c_str()),
+    glUniform3fv(glGetUniformLocation(_mesh.shaderID, ("lightCol[" + std::to_string(i) + "]").c_str()),
                  3,
                  glm::value_ptr(m_lightCol[i]));
   }
-  glUniform1f(glGetUniformLocation(m_beckmannID, "roughness"),
-               m_roughness);
 
-  glm::vec3 diffuseCol;
-  diffuseCol = glm::vec3(0.4f, 0.4f, 1.f);
+  int envMapMaxLod = log2(1024);
 
-  glUniform3fv(glGetUniformLocation(m_beckmannID, "diffuseColour"),
+  glUniform1i(glGetUniformLocation(_mesh.shaderID, "envMapMaxLod"),
+              envMapMaxLod);
+
+  glUniform1f(glGetUniformLocation(_mesh.shaderID, "roughness"),
+               _mesh.roughness);
+
+  glUniform1f(glGetUniformLocation(_mesh.shaderID, "metallic"),
+               _mesh.metallic);
+
+  glUniform1f(glGetUniformLocation(_mesh.shaderID, "diffAmount"),
+              _mesh.diffAmount);
+
+  glUniform1f(glGetUniformLocation(_mesh.shaderID, "specAmount"),
+               _mesh.specAmount);
+
+  glUniform3fv(glGetUniformLocation(_mesh.shaderID, "materialDiff"),
                1,
-               glm::value_ptr(diffuseCol));
+               glm::value_ptr(_mesh.materialDiffuse));
+
+  glUniform3fv(glGetUniformLocation(_mesh.shaderID, "materialSpec"),
+               1,
+               glm::value_ptr(_mesh.materialSpecular));
+
+  glUniform1f(glGetUniformLocation(_mesh.shaderID, "alpha"),
+              _mesh.alpha);
 }
 
 void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *filename)

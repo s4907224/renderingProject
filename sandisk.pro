@@ -19,13 +19,15 @@ HEADERS += include/sandiskscene.h \
            include/camera.h \
            include/fixedcamera.h \
            include/scene.h \
-           include/trackballcamera.h
+           include/trackballcamera.h \
+           include/usb.h
 
 SOURCES += src/main.cpp src/sandiskscene.cpp \
            src/camera.cpp \
            src/fixedcamera.cpp \
            src/scene.cpp \
-           src/trackballcamera.cpp
+           src/trackballcamera.cpp \
+           src/usb.cpp
 
 OTHER_FILES +=  shaders/env_vert.glsl \
                 shaders/env_frag.glsl \

@@ -56,13 +56,15 @@ SOURCES       = src/main.cpp \
 		src/camera.cpp \
 		src/fixedcamera.cpp \
 		src/scene.cpp \
-		src/trackballcamera.cpp 
+		src/trackballcamera.cpp \
+		src/usb.cpp 
 OBJECTS       = obj/main.o \
 		obj/sandiskscene.o \
 		obj/camera.o \
 		obj/fixedcamera.o \
 		obj/scene.o \
-		obj/trackballcamera.o
+		obj/trackballcamera.o \
+		obj/usb.o
 DIST          = $OTHER_FILES \
 		.qmake.stash \
 		common.pri \
@@ -70,12 +72,14 @@ DIST          = $OTHER_FILES \
 		include/camera.h \
 		include/fixedcamera.h \
 		include/scene.h \
-		include/trackballcamera.h src/main.cpp \
+		include/trackballcamera.h \
+		include/usb.h src/main.cpp \
 		src/sandiskscene.cpp \
 		src/camera.cpp \
 		src/fixedcamera.cpp \
 		src/scene.cpp \
-		src/trackballcamera.cpp
+		src/trackballcamera.cpp \
+		src/usb.cpp
 QMAKE_TARGET  = sandisk
 DESTDIR       = 
 TARGET        = sandisk
@@ -477,8 +481,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /home/cglover/Qt/5.9/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/sandiskscene.h include/camera.h include/fixedcamera.h include/scene.h include/trackballcamera.h $(DISTDIR)/
-	$(COPY_FILE) --parents src/main.cpp src/sandiskscene.cpp src/camera.cpp src/fixedcamera.cpp src/scene.cpp src/trackballcamera.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/sandiskscene.h include/camera.h include/fixedcamera.h include/scene.h include/trackballcamera.h include/usb.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/main.cpp src/sandiskscene.cpp src/camera.cpp src/fixedcamera.cpp src/scene.cpp src/trackballcamera.cpp src/usb.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -656,6 +660,7 @@ obj/main.o: src/main.cpp include/sandiskscene.h \
 		/home/cglover/NGL/include/ngl/NGLassert.h \
 		include/scene.h \
 		include/glinclude.h \
+		include/usb.h \
 		include/fixedcamera.h \
 		include/camera.h \
 		include/trackballcamera.h
@@ -791,6 +796,7 @@ obj/sandiskscene.o: src/sandiskscene.cpp include/sandiskscene.h \
 		/home/cglover/NGL/include/ngl/NGLassert.h \
 		include/scene.h \
 		include/glinclude.h \
+		include/usb.h \
 		/home/cglover/NGL/include/ngl/NGLInit.h \
 		/home/cglover/NGL/include/ngl/Singleton.h \
 		/home/cglover/NGL/include/ngl/VAOPrimitives.h \
@@ -817,6 +823,9 @@ obj/scene.o: src/scene.cpp include/scene.h \
 obj/trackballcamera.o: src/trackballcamera.cpp include/trackballcamera.h \
 		include/camera.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/trackballcamera.o src/trackballcamera.cpp
+
+obj/usb.o: src/usb.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o obj/usb.o src/usb.cpp
 
 ####### Install
 

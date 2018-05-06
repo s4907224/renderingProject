@@ -3,6 +3,7 @@
 
 #include <ngl/Obj.h>
 #include "scene.h"
+#include "usb.h"
 
 class EnvScene : public Scene
 {
@@ -17,13 +18,68 @@ class EnvScene : public Scene
     float m_roughness;
   private:
     /// @brief ID for the environment texture.
-    GLuint m_envTex;
+    GLuint m_envTex, m_normalMapTex;
     /// @brief IDs for FBO.
     GLuint m_fboID, m_fboTextureID, m_fboDepthID;
     /// @brief IDs for shaders.
     GLint m_environmentID, m_beckmannID, m_shadowID;
-    /// @brief Pointer to the OBJ.
-    ngl::Obj *m_mesh;
+    /// @brief std array containing the 5 meshes that make up the object.
+    std::array<USBmesh, 5> m_usbMeshes = {
+                                          //Black Plastic
+                                          USBmesh(
+                                                  0.7f, //Roughness
+                                                  0.4f, //Metallic
+                                                  0.5f, //Diffuse Intensity
+                                                  0.5f, //Spec Intensity
+                                                  glm::vec3(0.1f, 0.1f, 0.1f), //Diffuse Colour
+                                                  glm::vec3(1.f, 1.f, 1.f), //Spec Colour
+                                                  1.f
+                                                  ),
+
+                                          //Blue Plastic
+                                          USBmesh(
+                                                  0.7f,
+                                                  0.1f,
+                                                  0.4f,
+                                                  0.4f,
+                                                  glm::vec3(0.f, 0.25f, 0.61f),
+                                                  glm::vec3(1.f, 1.f, 1.f),
+                                                  1.f
+                                                  ),
+
+                                          //Gold
+                                          USBmesh(
+                                                  0.4f,
+                                                  0.7f,
+                                                  0.5f,
+                                                  0.5f,
+                                                  glm::vec3(),
+                                                  glm::vec3(1.f, 0.81f, 0.29f),
+                                                  1.f
+                                                  ),
+
+                                          //Metal
+                                          USBmesh(
+                                                  0.4f,
+                                                  0.7f,
+                                                  0.5f,
+                                                  0.5f,
+                                                  glm::vec3(0.2f, 0.2f, 0.2f),
+                                                  glm::vec3(1.f, 1.f, 1.f),
+                                                  1.f
+                                                  ),
+
+                                          //Translucent Plastic
+                                          USBmesh(
+                                                  0.1f,
+                                                  0.1f,
+                                                  0.1f,
+                                                  0.5f,
+                                                  glm::vec3(0.7f, 0.8f, 0.75f),
+                                                  glm::vec3(0.6f, 0.8f, 0.8f),
+                                                  0.8f
+                                                  )
+                                         };
     /// @brief Array of light positions.
     std::array<glm::vec3, 14> m_lightPos = {glm::vec3( 1.506f, 0.815f, 0.041f),
                                             glm::vec3( 0.079f, 0.609f,-1.026f),
@@ -57,7 +113,7 @@ class EnvScene : public Scene
     /// @brief Method to set the environment shader active and pass over the uniforms.
     void loadEnvironmentUniforms();
     /// @brief Method to set the beckmann shader active and pass over the uniforms.
-    void loadMemoryStickUniforms();
+    void loadMemoryStickUniforms(USBmesh _mesh);
     /// @brief Initialises the cubemap.
     void initEnvironment();
     /// @brief Intialises any given 2D texture.
