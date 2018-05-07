@@ -14,7 +14,7 @@ uniform vec3 lightCol[14];
 
 //Textures
 uniform samplerCube envMap;
-uniform sampler2D normalMap;
+uniform sampler2D textMap;
 uniform int envMapMaxLod;
 
 //Shader parameters
@@ -72,23 +72,14 @@ vec3 specularComponent(vec3 _n, vec3 _v, vec3 _s, float _roughness, vec3 _fInc)
   return F * D / NdotV;
 }
 
-mat4 rotationMatrix(vec3 axis, float angle)
+float over(float _a, float _b)
 {
-  axis = normalize(axis);
-  float s = sin(angle);
-  float c = cos(angle);
-  float oc = 1.0 - c;
-
-  return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-              oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-              oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-              0.0,                                0.0,                                0.0,                                1.0);
+  return (_a) + _b * (1.f - _a);
 }
 
-vec3 rotate(vec3 v, vec3 axis, float angle)
+vec3 over(float _a, vec3 _b)
 {
-  mat4 m = rotationMatrix(axis, angle);
-  return (m * vec4(v, 1.0)).xyz;
+  return (_a) + _b.rgb * (1.f - _a);
 }
 
 void main()
@@ -97,13 +88,16 @@ void main()
   vec3 v = vec3(0.0f, 0.0f, 1.0f);
   v = normalize(-worldPos);
 
-  vec3 normalPerturbation = normalize(texture(normalMap, FragmentTexCoord).xyz);
-  float angle = acos(dot(n, normalPerturbation));
-  //n = rotate(n,v,angle);
   vec3 p = FragmentPosition.xyz / FragmentPosition.w;
   vec3 lookup = (reflect(-v,n));
   lookup.z *= -1;
   lookup.y *= -1;
+
+  float text = texture(textMap, FragmentTexCoord).a;
+  float al = over(text, alpha);
+  float diffuseAmount = over(text * 0.6f, diffAmount);
+
+  vec3 diffuseColour = over(text, materialDiff);
 
   vec3 totalLight;
   for(int i = 0; i < 14; i++)
@@ -119,9 +113,9 @@ void main()
 
     vec3 diffuseIntensity = lightCol[i] * max(dot(s, n), 0.0);
 
-    totalLight += vec3((diffuseIntensity * diffAmount * materialDiff) +
+    totalLight += vec3((diffuseIntensity * diffuseAmount * diffuseColour) +
                    (specularIntensity * specComponent * specAmount * materialSpec));
   }
 
-  FragColor = vec4(totalLight , alpha);
+  FragColor = vec4(totalLight , al);
 }

@@ -33,8 +33,14 @@ OTHER_FILES +=  shaders/env_vert.glsl \
                 shaders/env_frag.glsl \
                 shaders/beckmann_vert.glsl \
                 shaders/beckmann_frag.glsl \
+                shaders/brushedMetal_vert.glsl \
+                shaders/brushedMetal_frag.glsl \
+                shaders/translucentPlastic_vert.glsl \
+                shaders/translucentPlastic_frag.glsl \
+                shaders/dof_vert.glsl \
+                shaders/dof_frag.glsl \
                 shaders/shadow_vert.glsl \
-                shaders/shadow_frag.glsl \
+                shaders/shadow_frag.glsl
 
 DISTFILES += $OTHER_FILES
 

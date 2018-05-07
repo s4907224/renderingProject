@@ -2,9 +2,9 @@
 
 layout(location = 0) in vec3 VertexPosition;
 
-uniform mat4 MVP;
+uniform mat4 depthMVP;
 
 void main()
 {
- gl_Position = MVP * vec4(VertexPosition, 1.f);
+ gl_Position = depthMVP * vec4(VertexPosition, 1.f);
 }

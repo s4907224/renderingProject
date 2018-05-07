@@ -11,7 +11,7 @@ TrackballCamera::TrackballCamera() :
     m_state(TRACKBALL_PASSIVE),
     m_yaw(0.0),
     m_pitch(0.0),
-    m_zoom(1.0),
+    m_zoom(2.0),
     m_sensitivity(0.01),
     m_lastYaw(0.0),
     m_lastPitch(0.0),
@@ -105,7 +105,7 @@ void TrackballCamera::mouseRotate(double mouseX, double mouseY) {
  * @param mouseY
  */
 void TrackballCamera::mouseZoom(double mouseX, double mouseY) {
-    m_zoom = glm::clamp(m_zoom + (mouseY - m_lastY) * m_sensitivity, 0.0, 10.0);
+    m_zoom = glm::clamp(m_zoom + (mouseY - m_lastY) * m_sensitivity, 0.8, 3.0);
     m_lastY = mouseY;
 }
 

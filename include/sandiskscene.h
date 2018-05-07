@@ -12,17 +12,21 @@ class EnvScene : public Scene
     EnvScene();
     /// @brief Initialisation method for GL setup and shaders.
     void initGL() noexcept;
+    /// @brief Called to resize both the window and set the FBO to be reinitialised.
+    void resizeGL(GLint width, GLint height) noexcept;
     /// @brief GL Draw method.
     void paintGL() noexcept;
     /// @brief Currently public for debugging roughness by changing it in main.
     float m_roughness;
   private:
     /// @brief ID for the environment texture.
-    GLuint m_envTex, m_normalMapTex;
+    GLuint m_envTex, m_normalMapTex, m_logoMap, m_textMap;
     /// @brief IDs for FBO.
-    GLuint m_fboID, m_fboTextureID, m_fboDepthID;
+    GLuint m_fbo1ID, m_fbo1TexID, m_fbo1DepthTexID, m_fbo2ID, m_fbo2TexID, m_fbo2DepthTexID;
+    /// @brief Returns true when window has been resized.
+    bool m_fboIsDirty;
     /// @brief IDs for shaders.
-    GLint m_environmentID, m_beckmannID, m_shadowID;
+    GLint m_environmentID, m_beckmannID, m_brushedMetalID, m_translucentPlasticID, m_dofID, m_shadowID;
     /// @brief std array containing the 5 meshes that make up the object.
     std::array<USBmesh, 5> m_usbMeshes = {
                                           //Black Plastic
@@ -30,10 +34,10 @@ class EnvScene : public Scene
                                                   0.7f, //Roughness
                                                   0.4f, //Metallic
                                                   0.5f, //Diffuse Intensity
-                                                  0.5f, //Spec Intensity
+                                                  0.1f, //Spec Intensity
                                                   glm::vec3(0.1f, 0.1f, 0.1f), //Diffuse Colour
                                                   glm::vec3(1.f, 1.f, 1.f), //Spec Colour
-                                                  1.f
+                                                  1.f //Alpha
                                                   ),
 
                                           //Blue Plastic
@@ -41,7 +45,7 @@ class EnvScene : public Scene
                                                   0.7f,
                                                   0.1f,
                                                   0.4f,
-                                                  0.4f,
+                                                  0.2f,
                                                   glm::vec3(0.f, 0.25f, 0.61f),
                                                   glm::vec3(1.f, 1.f, 1.f),
                                                   1.f
@@ -49,10 +53,10 @@ class EnvScene : public Scene
 
                                           //Gold
                                           USBmesh(
-                                                  0.4f,
-                                                  0.7f,
+                                                  0.6f,
+                                                  1.f,
                                                   0.5f,
-                                                  0.5f,
+                                                  0.1f,
                                                   glm::vec3(),
                                                   glm::vec3(1.f, 0.81f, 0.29f),
                                                   1.f
@@ -60,12 +64,12 @@ class EnvScene : public Scene
 
                                           //Metal
                                           USBmesh(
-                                                  0.4f,
+                                                  0.6f,
                                                   0.7f,
                                                   0.5f,
-                                                  0.5f,
+                                                  0.4f,
                                                   glm::vec3(0.2f, 0.2f, 0.2f),
-                                                  glm::vec3(1.f, 1.f, 1.f),
+                                                  glm::vec3(0.4f, 0.4f, 0.4f),
                                                   1.f
                                                   ),
 
@@ -74,10 +78,10 @@ class EnvScene : public Scene
                                                   0.1f,
                                                   0.1f,
                                                   0.1f,
-                                                  0.5f,
+                                                  0.4f,
                                                   glm::vec3(0.7f, 0.8f, 0.75f),
                                                   glm::vec3(0.6f, 0.8f, 0.8f),
-                                                  0.8f
+                                                  0.9f
                                                   )
                                          };
     /// @brief Array of light positions.
@@ -110,6 +114,11 @@ class EnvScene : public Scene
                                             glm::vec3(0.223f, 0.331f, 0.407f),
                                             glm::vec3(0.209f, 0.188f, 0.150f),
                                             glm::vec3(0.441f, 0.376f, 0.276f)};
+
+    /// @brief Takes the rendered image and applies a depth of field effect.
+    void dof();
+    /// @brief Sets up GL to render a depth texture from the perspective of the main light.
+    void loadShadowUniforms();
     /// @brief Method to set the environment shader active and pass over the uniforms.
     void loadEnvironmentUniforms();
     /// @brief Method to set the beckmann shader active and pass over the uniforms.
@@ -125,5 +134,9 @@ class EnvScene : public Scene
     /// @param _target the side of the cube that is being initialised
     /// @param _filename the path to the image to be loaded.
     void initEnvironmentSide(GLenum _target, const char* _filename);
+    /// @brief Initialises the Framebuffer for Dof
+    void initDepthFBO();
+    /// @brief Initialises the Framebuffer for shadow mapping.
+    void initShadowFBO();
 };
 #endif

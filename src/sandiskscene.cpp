@@ -10,65 +10,102 @@
 
 EnvScene::EnvScene() : Scene() {}
 
-void EnvScene::initGL() noexcept {
-    ngl::NGLInit::instance();
-    glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-    shader->loadShader("EnvironmentProgram",
-                       "shaders/env_vert.glsl",
-                       "shaders/env_frag.glsl");
+void EnvScene::initGL() noexcept
+{
+  ngl::NGLInit::instance();
+  glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_MULTISAMPLE);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_ARB_multisample);
 
-    shader->loadShader("BeckmannProgram",
-                       "shaders/beckmann_vert.glsl",
-                       "shaders/beckmann_frag.glsl");
+  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
+  shader->loadShader("EnvironmentProgram",
+                     "shaders/env_vert.glsl",
+                     "shaders/env_frag.glsl");
 
-    shader->loadShader("ShadowProgram",
-                       "shaders/shadow_vert.glsl",
-                       "shaders/shadow_frag.glsl");
+  shader->loadShader("BeckmannProgram",
+                     "shaders/beckmann_vert.glsl",
+                     "shaders/beckmann_frag.glsl");
 
-    m_environmentID = shader->getProgramID("EnvironmentProgram");
-    m_beckmannID = shader->getProgramID("BeckmannProgram");
-    m_shadowID = shader->getProgramID("ShadowProgram");
+  shader->loadShader("BrushedMetalProgram",
+                     "shaders/brushedMetal_vert.glsl",
+                     "shaders/brushedMetal_frag.glsl");
 
-    shader->use("BeckmannProgram");
-    initTexture(3, m_normalMapTex, "images/bump2.jpg");
-    shader->setUniform("normalMap", 3);
+  shader->loadShader("TranslucentPlasticProgram",
+                     "shaders/translucentPlastic_vert.glsl",
+                     "shaders/translucentPlastic_frag.glsl");
 
-    initEnvironment();
-    m_roughness = 0.5f;
+  shader->loadShader("DOFProgram",
+                     "shaders/dof_vert.glsl",
+                     "shaders/dof_frag.glsl");
 
-    m_usbMeshes[0].mesh = new ngl::Obj("models/blackPlastic.obj");
-    m_usbMeshes[0].shaderID = m_beckmannID;
+  m_environmentID = shader->getProgramID("EnvironmentProgram");
+  m_beckmannID = shader->getProgramID("BeckmannProgram");
+  m_brushedMetalID = shader->getProgramID("BrushedMetalProgram");
+  m_translucentPlasticID = shader->getProgramID("TranslucentPlasticProgram");
+  m_dofID = shader->getProgramID("DOFProgram");
 
-    m_usbMeshes[1].mesh = new ngl::Obj("models/bluePlastic.obj");
-    m_usbMeshes[1].shaderID = m_beckmannID;
+  shader->use("BeckmannProgram");
+  initTexture(1, m_normalMapTex, "images/bump2.jpg");
+  shader->setUniform("normalMap", 1);
 
-    m_usbMeshes[2].mesh = new ngl::Obj("models/gold.obj");
-    m_usbMeshes[2].shaderID = m_beckmannID;
+  shader->use("BrushedMetalProgram");
+  initTexture(2, m_logoMap, "images/sdlogo.png");
+  shader->setUniform("logoMap", 2);
 
-    m_usbMeshes[3].mesh = new ngl::Obj("models/metal.obj");
-    m_usbMeshes[3].shaderID = m_beckmannID;
+  shader->use("TranslucentPlasticProgram");
+  initTexture(3, m_textMap, "images/underText.png");
+  shader->setUniform("textMap", 3);
 
-    m_usbMeshes[4].mesh = new ngl::Obj("models/translucentPlastic.obj");
-    m_usbMeshes[4].shaderID = m_beckmannID;
+  initEnvironment();
+  m_roughness = 0.5f;
 
-    for (auto &i : m_usbMeshes)
-    {
-      i.mesh->createVAO();
-    }
+  m_usbMeshes[0].mesh = new ngl::Obj("models/blackPlastic.obj");
+  m_usbMeshes[0].shaderID = m_beckmannID;
+
+  m_usbMeshes[1].mesh = new ngl::Obj("models/bluePlastic.obj");
+  m_usbMeshes[1].shaderID = m_beckmannID;
+
+  m_usbMeshes[2].mesh = new ngl::Obj("models/gold.obj");
+  m_usbMeshes[2].shaderID = m_beckmannID;
+
+  m_usbMeshes[3].mesh = new ngl::Obj("models/metal.obj");
+  m_usbMeshes[3].shaderID = m_brushedMetalID;
+
+  m_usbMeshes[4].mesh = new ngl::Obj("models/translucentPlastic.obj");
+  m_usbMeshes[4].shaderID = m_translucentPlasticID;
+
+  for (auto &i : m_usbMeshes)
+  {
+    i.mesh->createVAO();
+  }
+
+  ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
+  prim->createTrianglePlane("plane", 2.f, 2.f, 1, 1, ngl::Vec3::up());
+
+  initShadowFBO();
+}
+
+void EnvScene::resizeGL(GLint width, GLint height) noexcept
+{
+  Scene::resizeGL(width, height);
+  m_fboIsDirty = true;
 }
 
 void EnvScene::paintGL() noexcept
 {
-  //Draw depth texture to FBO.
+  //Render to FBO texture first
+  if (m_fboIsDirty)
+  {
+    initDepthFBO();
+    m_fboIsDirty = false;
+  }
 
-  //Draw to the screen.
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo1ID);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_width,m_height);
 
@@ -82,17 +119,44 @@ void EnvScene::paintGL() noexcept
     loadMemoryStickUniforms(i);
     i.mesh->draw();
   }
+
+  dof();
+}
+
+void EnvScene::dof()
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, m_fbo1TexID);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, m_fbo1TexID);
+
+  glUseProgram(m_dofID);
+  glUniform1i(glGetUniformLocation(m_dofID, "fboTex"), 4);
+  glUniform1i(glGetUniformLocation(m_dofID, "fboDepthTex"), 6);
+  glUniform1f(glGetUniformLocation(m_dofID, "focalDistance"), 2.f);
+  glUniform1f(glGetUniformLocation(m_dofID, "blurRadius"), 0.01f);
+
+  glm::mat4 planeMVP = glm::rotate(glm::mat4(1.f), -glm::pi<float>() * 0.5f, glm::vec3(1.f, 0.f, 0.f));
+  glUniformMatrix4fv(glGetUniformLocation(m_dofID, "MVP"),
+                     1,
+                     false,
+                     glm::value_ptr(planeMVP));
+
+  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
+  prim->draw("plane");
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void EnvScene::loadEnvironmentUniforms()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  shader->use("EnvironmentProgram");
+  glUseProgram(m_environmentID);
 
   glm::mat4 M, MV, MVP;
   glm::mat3 N;
 
-  M = glm::scale(M, glm::vec3(50.f, 50.f, 50.f));
+  M = glm::scale(M, glm::vec3(20.f, 20.f, 20.f));
   MV = m_V2 * M;
   MVP = m_P * MV;
   N = glm::inverse(glm::mat3(MV));
@@ -202,8 +266,8 @@ void EnvScene::initTexture(const GLuint& texUnit, GLuint &texId, const char *fil
                 GL_UNSIGNED_BYTE, // Data type of pixel data
                 img.getPixels()); // Pointer to image data in memory
 
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
@@ -256,4 +320,73 @@ void EnvScene::initEnvironmentSide(GLenum target, const char *filename)
       GL_UNSIGNED_BYTE, // Data type of pixel data
       img.getPixels()   // Pointer to image data in memory
     );
+}
+
+void EnvScene::initDepthFBO()
+{
+   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo1ID);
+   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == (GL_FRAMEBUFFER_COMPLETE))
+   {
+     glDeleteTextures(1, &m_fbo1TexID);
+     glDeleteTextures(1, &m_fbo1DepthTexID);
+     glDeleteFramebuffers(1, &m_fbo1ID);
+   }
+
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+   glGenTextures(1, &m_fbo1TexID);
+   glActiveTexture(GL_TEXTURE4);
+   glBindTexture(GL_TEXTURE_2D, m_fbo1TexID);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   glGenTextures(1, &m_fbo1DepthTexID);
+   glActiveTexture(GL_TEXTURE6);
+   glBindTexture(GL_TEXTURE_2D, m_fbo1DepthTexID);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenFramebuffers(1, &m_fbo1ID);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo1ID);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_fbo1TexID, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_fbo1DepthTexID, 0);
+
+  GLenum drawBufs[] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, drawBufs);
+
+  CheckFrameBuffer();
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void EnvScene::initShadowFBO()
+{
+   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo2ID);
+   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == (GL_FRAMEBUFFER_COMPLETE))
+   {
+     glDeleteTextures(1, &m_fbo2DepthTexID);
+     glDeleteFramebuffers(1, &m_fbo2ID);
+   }
+
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+   glGenTextures(1, &m_fbo2DepthTexID);
+   glActiveTexture(GL_TEXTURE8);
+   glBindTexture(GL_TEXTURE_2D, m_fbo2DepthTexID);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, nullptr);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenFramebuffers(1, &m_fbo2ID);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo2ID);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_fbo2DepthTexID, 0);
+
+  GLenum drawBufs[] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, drawBufs);
+
+  CheckFrameBuffer();
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
