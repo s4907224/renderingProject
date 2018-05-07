@@ -26,9 +26,9 @@ class EnvScene : public Scene
     /// @brief Returns true when window has been resized.
     bool m_fboIsDirty;
     /// @brief IDs for shaders.
-    GLint m_environmentID, m_beckmannID, m_brushedMetalID, m_translucentPlasticID, m_dofID, m_shadowID;
+    GLint m_environmentID, m_beckmannID, m_brushedMetalID, m_translucentPlasticID, m_dofID, m_fakeShadowID;
     /// @brief std array containing the 5 meshes that make up the object.
-    std::array<USBmesh, 5> m_usbMeshes = {
+    std::array<USBmesh, 6> m_usbMeshes = {
                                           //Black Plastic
                                           USBmesh(
                                                   0.7f, //Roughness
@@ -81,7 +81,18 @@ class EnvScene : public Scene
                                                   0.4f,
                                                   glm::vec3(0.7f, 0.8f, 0.75f),
                                                   glm::vec3(0.6f, 0.8f, 0.8f),
-                                                  0.9f
+                                                  0.85f
+                                                  ),
+
+                                          //Faceplate
+                                          USBmesh(
+                                                  1.0f,
+                                                  0.1f,
+                                                  1.0f,
+                                                  0.0f,
+                                                  glm::vec3(),
+                                                  glm::vec3(),
+                                                  0.5f
                                                   )
                                          };
     /// @brief Array of light positions.

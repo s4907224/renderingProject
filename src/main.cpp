@@ -132,7 +132,7 @@ int main() {
     int width = 1024; int height = 768;
     GLFWwindow* window = glfwCreateWindow(width, // width 
                                           height, // height
-                                          "My Title", // title 
+                                          "Callum Glover s4907224 RTR:2 - Sandisk Memory Stick", // title
                                           nullptr, // monitor for full screen
                                           nullptr); // return value on failure
 

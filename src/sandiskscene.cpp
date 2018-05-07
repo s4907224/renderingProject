@@ -42,11 +42,16 @@ void EnvScene::initGL() noexcept
                      "shaders/dof_vert.glsl",
                      "shaders/dof_frag.glsl");
 
+  shader->loadShader("FakeShadowProgram",
+                     "shaders/fakeShadow_vert.glsl",
+                     "shaders/fakeShadow_frag.glsl");
+
   m_environmentID = shader->getProgramID("EnvironmentProgram");
   m_beckmannID = shader->getProgramID("BeckmannProgram");
   m_brushedMetalID = shader->getProgramID("BrushedMetalProgram");
   m_translucentPlasticID = shader->getProgramID("TranslucentPlasticProgram");
   m_dofID = shader->getProgramID("DOFProgram");
+  m_fakeShadowID = shader->getProgramID("FakeShadowProgram");
 
   shader->use("BeckmannProgram");
   initTexture(1, m_normalMapTex, "images/bump2.jpg");
@@ -77,6 +82,9 @@ void EnvScene::initGL() noexcept
 
   m_usbMeshes[4].mesh = new ngl::Obj("models/translucentPlastic.obj");
   m_usbMeshes[4].shaderID = m_translucentPlasticID;
+
+  m_usbMeshes[5].mesh = new ngl::Obj("models/faceplate.obj");
+  m_usbMeshes[5].shaderID = m_fakeShadowID;
 
   for (auto &i : m_usbMeshes)
   {

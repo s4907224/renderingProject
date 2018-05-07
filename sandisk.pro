@@ -39,8 +39,8 @@ OTHER_FILES +=  shaders/env_vert.glsl \
                 shaders/translucentPlastic_frag.glsl \
                 shaders/dof_vert.glsl \
                 shaders/dof_frag.glsl \
-                shaders/shadow_vert.glsl \
-                shaders/shadow_frag.glsl
+                shaders/fakeShadow_vert.glsl \
+                shaders/fakeShadow_frag.glsl
 
 DISTFILES += $OTHER_FILES
 
