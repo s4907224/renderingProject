@@ -211,19 +211,23 @@ void EnvScene::loadMemoryStickUniforms(USBmesh _mesh)
                      1,
                      true,
                      glm::value_ptr(N));
-  glUniform3fv(glGetUniformLocation(_mesh.shaderID, "eyePos"),
-               1,
-               glm::value_ptr(m_eyePos));
 
-  for(size_t i=0; i<m_lightPos.size(); i++)
+  if (_mesh.shaderID == m_fakeShadowID)
   {
-    glUniform3fv(glGetUniformLocation(_mesh.shaderID, ("lightPos[" + std::to_string(i) + "]").c_str()),
-                 3,
-                 glm::value_ptr(m_lightPos[i]));
-    glUniform3fv(glGetUniformLocation(_mesh.shaderID, ("lightCol[" + std::to_string(i) + "]").c_str()),
-                 3,
-                 glm::value_ptr(m_lightCol[i]));
+    glUniform3fv(glGetUniformLocation(m_fakeShadowID, "lightPos"),
+                 1,
+                 glm::value_ptr(m_lightPos[0]));
+    return;
   }
+
+  glUniform3fv(glGetUniformLocation(_mesh.shaderID, "lightCol"),
+               m_lightCol.size(),
+               glm::value_ptr(m_lightCol[0]));
+
+  glUniform3fv(glGetUniformLocation(_mesh.shaderID, "lightPos"),
+               m_lightCol.size(),
+               glm::value_ptr(m_lightPos[0]));
+
 
   int envMapMaxLod = log2(1024);
 

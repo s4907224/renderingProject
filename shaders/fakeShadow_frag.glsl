@@ -30,7 +30,6 @@ uniform float alpha;
 in vec3 worldPos;
 in vec3 FragNormal;
 in vec4 FragmentPosition;
-in vec2 FragmentTexCoord;
 
 void main()
 {

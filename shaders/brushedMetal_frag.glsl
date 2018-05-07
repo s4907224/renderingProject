@@ -272,9 +272,12 @@ void main()
     vec3 diffuseIntensity = lightCol[i] * max(dot(s, n), 0.0);
 
     totalLight += vec3((diffuseIntensity * diffAmount * diffuseColour) +
-                   (specularIntensity * specComponent * specAmount * materialSpec));
+                       (specularIntensity * specComponent * specAmount * materialSpec));
   }
 
   FragColor = vec4(totalLight , alpha);
+  if (FragmentTexCoord.x > 0.06f  && FragmentTexCoord.x < 0.1f &&
+      FragmentTexCoord.y > 0.87f)
+    FragColor = vec4(1.f, 0.f, 0.f, 1.f);
   //FragColor = vec4(vec3(n), 1.f);
 }
