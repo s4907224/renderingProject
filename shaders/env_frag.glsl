@@ -4,7 +4,7 @@
 smooth in vec3 FragmentPosition;
 smooth in vec3 FragmentNormal;
 smooth in vec2 FragmentTexCoord;
-in vec4 worldPos;
+in vec4 eyePos;
 
 /// @brief our output fragment colour
 layout (location=0) out vec4 FragColour;
@@ -20,7 +20,7 @@ void main ()
 
     vec3 p = -FragmentPosition;
 
-    vec3 lookup = normalize(worldPos.xyz / worldPos.w);
+    vec3 lookup = normalize(eyePos.xyz / eyePos.w);
     lookup.y *= -1;
     lookup.z *= -1;
 

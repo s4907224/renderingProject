@@ -27,7 +27,7 @@ uniform vec3 materialSpec;
 uniform float alpha;
 
 // Vectors from the vertex shader.
-in vec3 worldPos;
+in vec3 eyePos;
 in vec3 FragNormal;
 in vec4 FragmentPosition;
 in vec2 FragmentTexCoord;
@@ -86,7 +86,7 @@ void main()
 {
   vec3 n = normalize(FragNormal);
   vec3 v = vec3(0.0f, 0.0f, 1.0f);
-  v = normalize(-worldPos);
+  v = normalize(-eyePos);
 
   vec3 p = FragmentPosition.xyz / FragmentPosition.w;
   vec3 lookup = (reflect(-v,n));
@@ -99,13 +99,14 @@ void main()
 
   vec3 diffuseColour = over(text, materialDiff);
 
-  vec3 totalLight;
+  vec3 totalLight = vec3(0.f);
+
   for(int i = 0; i < 14; i++)
   {
     vec3 transformedLightPos = lightPos[i] * 100.f;
-    float distance = length(transformedLightPos - worldPos.xyz);
+    float distance = length(transformedLightPos - eyePos.xyz);
     float attenuation = 1.0 / (distance * distance);
-    vec3 s = normalize(transformedLightPos - worldPos.xyz);
+    vec3 s = normalize(transformedLightPos - eyePos.xyz);
 
     vec3 specComponent = specularComponent(n, v, s, roughness, vec3(metallic, metallic, metallic));
     specComponent = max(min(specComponent, 1), 0);

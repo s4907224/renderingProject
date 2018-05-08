@@ -14,7 +14,6 @@ uniform vec3 lightCol[14];
 
 //Textures
 uniform samplerCube envMap;
-uniform sampler2D normalMap;
 uniform sampler2D logoMap;
 uniform int envMapMaxLod;
 
@@ -28,7 +27,7 @@ uniform vec3 materialSpec;
 uniform float alpha;
 
 // Vectors from the vertex shader.
-in vec3 worldPos;
+in vec3 eyePos;
 in vec3 FragNormal;
 in vec4 FragmentPosition;
 in vec2 FragmentTexCoord;
@@ -216,16 +215,16 @@ float scratchGen(float _angle, float _start, float _end, vec2 _point, float _str
 
 float scratchRoughness()
 {
-  float pi_4 = pi/4.f;
+  float pi_3 = pi * 0.3333f;
   vec2 PS = FragmentTexCoord * 8.f;
   PS = PS + sumOctave(PS, 10, 0.5f, 1.f, 0.f, 1.f) * 0.4f;
-  float s1 = scratchGen(pi/3.f, 0.f, 1.f, PS, 20.f);
+  float s1 = scratchGen(pi_3, 0.f, 1.f, PS, 20.f);
   s1 = (s1 < 0.4f)?0.f:s1;
-  float s2 = scratchGen(pi/6.f, 0.f, 1.f, PS, 20.f);
+  float s2 = scratchGen(pi * 0.1666f, 0.f, 1.f, PS, 20.f);
   s2 = (s2 < 0.4f)?0.f:s2;
 
   PS = FragmentTexCoord * 10.f;
-  float sMask1 = scratchGen(pi/3.f, 0.0f, 0.8f, PS, 1.f);
+  float sMask1 = scratchGen(pi_3, 0.0f, 0.8f, PS, 1.f);
 
   PS = FragmentTexCoord * 10.f + 10.f;
   float sMask2 = scratchGen(0.f, 0.f, 0.8f, PS, 1.f);
@@ -242,14 +241,14 @@ void main()
 {
   vec3 n = normalize(FragNormal);
   vec3 v = vec3(0.0f, 0.0f, 1.0f);
-  v = normalize(-worldPos);
+  v = normalize(-eyePos);
 
   vec3 p = FragmentPosition.xyz / FragmentPosition.w;
   vec3 lookup = (reflect(-v,n));
   lookup.z *= -1;
   lookup.y *= -1;
 
-  vec3 totalLight;
+  vec3 totalLight = vec3(0.f);
 
   float logo = texture(logoMap, FragmentTexCoord).a;
   vec3 diffuseColour = over(vec4(vec3(logo * 0.3), logo), vec4(materialDiff, 1.f));
@@ -268,9 +267,9 @@ void main()
   for(int i = 0; i < 14; i++)
   {
     vec3 transformedLightPos = lightPos[i] * 100.f;
-    float distance = length(transformedLightPos - worldPos.xyz);
+    float distance = length(transformedLightPos - eyePos.xyz);
     float attenuation = 1.0 / (distance * distance);
-    vec3 s = normalize(transformedLightPos - worldPos.xyz);
+    vec3 s = normalize(transformedLightPos - eyePos.xyz);
 
     vec3 specComponent = specularComponent(n, v, s, roughness, vec3(metallic, metallic, metallic));
     specComponent = max(min(specComponent, 1), 0);

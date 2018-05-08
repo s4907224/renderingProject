@@ -14,7 +14,6 @@ uniform vec3 lightCol[14];
 
 //Textures
 uniform samplerCube envMap;
-uniform sampler2D normalMap;
 uniform int envMapMaxLod;
 
 //Shader parameters
@@ -27,7 +26,7 @@ uniform vec3 materialSpec;
 uniform float alpha;
 
 // Vectors from the vertex shader.
-in vec3 worldPos;
+in vec3 eyePos;
 in vec3 FragNormal;
 in vec4 FragmentPosition;
 in vec2 FragmentTexCoord;
@@ -72,46 +71,25 @@ vec3 specularComponent(vec3 _n, vec3 _v, vec3 _s, float _roughness, vec3 _fInc)
   return F * D / NdotV;
 }
 
-mat4 rotationMatrix(vec3 axis, float angle)
-{
-  axis = normalize(axis);
-  float s = sin(angle);
-  float c = cos(angle);
-  float oc = 1.0 - c;
-
-  return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-              oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-              oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-              0.0,                                0.0,                                0.0,                                1.0);
-}
-
-vec3 rotate(vec3 v, vec3 axis, float angle)
-{
-  mat4 m = rotationMatrix(axis, angle);
-  return (m * vec4(v, 1.0)).xyz;
-}
-
 void main()
 {
   vec3 n = normalize(FragNormal);
   vec3 v = vec3(0.0f, 0.0f, 1.0f);
-  v = normalize(-worldPos);
+  v = normalize(-eyePos);
 
-  vec3 normalPerturbation = normalize(texture(normalMap, FragmentTexCoord).xyz);
-  float angle = acos(dot(n, normalPerturbation));
-  //n = rotate(n,v,angle);
   vec3 p = FragmentPosition.xyz / FragmentPosition.w;
   vec3 lookup = (reflect(-v,n));
   lookup.z *= -1;
   lookup.y *= -1;
 
-  vec3 totalLight;
+  vec3 totalLight = vec3(0.f);
+
   for(int i = 0; i < 14; i++)
   {
     vec3 transformedLightPos = lightPos[i] * 100.f;
-    float distance = length(transformedLightPos - worldPos.xyz);
+    float distance = length(transformedLightPos - eyePos.xyz);
     float attenuation = 1.0 / (distance * distance);
-    vec3 s = normalize(transformedLightPos - worldPos.xyz);
+    vec3 s = normalize(transformedLightPos - eyePos.xyz);
 
     vec3 specComponent = specularComponent(n, v, s, roughness, vec3(metallic, metallic, metallic));
     specComponent = max(min(specComponent, 1), 0);

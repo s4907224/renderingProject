@@ -20,7 +20,7 @@ class EnvScene : public Scene
     float m_roughness;
   private:
     /// @brief ID for the environment texture.
-    GLuint m_envTex, m_normalMapTex, m_logoMap, m_textMap;
+    GLuint m_envTex, m_metalDispMap, m_logoMap, m_textMap;
     /// @brief IDs for FBO.
     GLuint m_fbo1ID, m_fbo1TexID, m_fbo1DepthTexID, m_fbo2ID, m_fbo2TexID, m_fbo2DepthTexID;
     /// @brief Returns true when window has been resized.

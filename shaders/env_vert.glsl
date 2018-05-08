@@ -14,7 +14,7 @@ smooth out vec3 FragmentPosition;
 smooth out vec3 FragmentNormal;
 smooth out vec2 FragmentTexCoord;
 
-out vec4 worldPos;
+out vec4 eyePos;
 
 uniform mat4 MV;            // model view matrix calculated in the App
 uniform mat4 MVP;           // model view projection calculated in the app
@@ -25,12 +25,12 @@ void main() {
 
     FragmentNormal = normalize(normalMatrix * VertexNormal);
 
-    worldPos = MV * vec4(VertexPosition, 1.f);
+    eyePos = MV * vec4(VertexPosition, 1.f);
 
     // Compute the unprojected vertex position
     FragmentPosition = vec3(MVP * vec4(VertexPosition + vec3(0, 0, 1), 1.0) );
 
-    //worldPos = vec4(FragmentPosition, 1);
+    //eyePos = vec4(FragmentPosition, 1);
 
     // Copy across the texture coordinates
     FragmentTexCoord = TexCoord;

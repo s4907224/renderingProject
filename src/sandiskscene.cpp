@@ -53,13 +53,13 @@ void EnvScene::initGL() noexcept
   m_dofID = shader->getProgramID("DOFProgram");
   m_fakeShadowID = shader->getProgramID("FakeShadowProgram");
 
-  shader->use("BeckmannProgram");
-  initTexture(1, m_normalMapTex, "images/bump2.jpg");
-  shader->setUniform("normalMap", 1);
+  shader->use("BrushedMetalProgram");
+  initTexture(1, m_logoMap, "images/sdlogo.png");
+  shader->setUniform("logoMap", 1);
 
   shader->use("BrushedMetalProgram");
-  initTexture(2, m_logoMap, "images/sdlogo.png");
-  shader->setUniform("logoMap", 2);
+  initTexture(2, m_metalDispMap, "images/test.png");
+  shader->setUniform("dispMap", 2);
 
   shader->use("TranslucentPlasticProgram");
   initTexture(3, m_textMap, "images/underText.png");

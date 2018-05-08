@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT5BUILD -DNGL_DEBUG -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -msse -msse2 -msse3 -march=native -march=native -g -std=gnu++1y -Wall -W -Wno-unused-parameter -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I. -I/home/s4907224/NGL/include -I../common/include -I/public/devel/libigl/include -isystem /usr/local/include/eigen3 -I/public/devel/noise/src -I/home/s4907224/NGL/include -Iinclude -I/opt/Qt5.9.0/5.9/gcc_64/include -I/opt/Qt5.9.0/5.9/gcc_64/include/QtOpenGL -I/opt/Qt5.9.0/5.9/gcc_64/include/QtWidgets -I/opt/Qt5.9.0/5.9/gcc_64/include/QtGui -I/opt/Qt5.9.0/5.9/gcc_64/include/QtCore -Imoc -isystem /usr/include/libdrm -I/opt/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++
+INCPATH       = -I. -I/home/s4907224/NGL/include -I/home/cglover/libigl/include -I/home/cglover/eigen -I/home/cglover/rendering_examples/common/packages/noise/src -I/home/s4907224/NGL/include -Iinclude -I/opt/Qt5.9.0/5.9/gcc_64/include -I/opt/Qt5.9.0/5.9/gcc_64/include/QtOpenGL -I/opt/Qt5.9.0/5.9/gcc_64/include/QtWidgets -I/opt/Qt5.9.0/5.9/gcc_64/include/QtGui -I/opt/Qt5.9.0/5.9/gcc_64/include/QtCore -Imoc -isystem /usr/include/libdrm -I/opt/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++
 QMAKE         = /opt/Qt5.9.0/5.9/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -39,7 +39,7 @@ DISTNAME      = sandisk1.0.0
 DISTDIR = /home/s4907224/s4907224_GLSL/obj/sandisk1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/home/s4907224/NGL/lib -Wl,-z,origin -Wl,-rpath,\$$ORIGIN/L/home/s4907224/NGL/lib -Wl,-rpath,/home/s4907224/NGL/lib -Wl,-rpath,/opt/Qt5.9.0/5.9/gcc_64/lib
-LIBS          = $(SUBLIBS) -lXi -ldl -lX11 -lXrandr -lXinerama -lXcursor -lXxf86vm -lglfw3 -lGLEW -lGLU /public/devel/noise/lib/libnoise.a -L/usr/local/lib -L/home/s4907224/NGL/lib -l NGL -L/opt/Qt5.9.0/5.9/gcc_64/lib -lQt5OpenGL -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -lXi -ldl -lX11 -lXrandr -lXinerama -lXcursor -lXxf86vm -lglfw3 -lGLEW -lGLU /home/cglover/rendering_examples/common/packages/noise/lib/libnoise.a -L/usr/local/lib -L/home/s4907224/NGL/lib -l NGL -L/opt/Qt5.9.0/5.9/gcc_64/lib -lQt5OpenGL -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -67,6 +67,7 @@ OBJECTS       = obj/main.o \
 		obj/usb.o
 DIST          = $OTHER_FILES \
 		.qmake.stash \
+		common.pri \
 		sandisk.pro include/sandiskscene.h \
 		include/camera.h \
 		include/fixedcamera.h \
@@ -256,7 +257,7 @@ Makefile: sandisk.pro .qmake.cache /opt/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++/qma
 		/opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/toolchain.prf \
 		/opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/default_pre.prf \
 		/home/s4907224/NGL/UseNGL.pri \
-		/home/s4907224/Realtime_Rendering/rendering_workshops/common/common.pri \
+		common.pri \
 		/opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/resolve_config.prf \
 		/opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/default_post.prf \
 		/opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/warn_on.prf \
@@ -444,7 +445,7 @@ Makefile: sandisk.pro .qmake.cache /opt/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++/qma
 /opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/toolchain.prf:
 /opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/default_pre.prf:
 /home/s4907224/NGL/UseNGL.pri:
-/home/s4907224/Realtime_Rendering/rendering_workshops/common/common.pri:
+common.pri:
 /opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/resolve_config.prf:
 /opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/default_post.prf:
 /opt/Qt5.9.0/5.9/gcc_64/mkspecs/features/warn_on.prf:
