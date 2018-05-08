@@ -255,7 +255,15 @@ void main()
   vec3 diffuseColour = over(vec4(vec3(logo * 0.3), logo), vec4(materialDiff, 1.f));
   float rough = brushedNoise() - scratchRoughness() * 0.2;
   rough = over(vec4(vec3(logo * 0.6), logo), vec4(rough)).r;
-  n = rotate(n,v,rough * 0.75f);
+
+  float fuzz = 0.005f;
+  float topWear = ((smoothstep(0.07f - fuzz, 0.07f + fuzz, FragmentTexCoord.x) - smoothstep(0.105f - fuzz, 0.105f + fuzz, FragmentTexCoord.x)) +
+                   (smoothstep(0.195f - fuzz, 0.195f + fuzz, FragmentTexCoord.x) - smoothstep(0.23f - fuzz, 0.23f + fuzz, FragmentTexCoord.x))) *
+                   (smoothstep(0.87f - fuzz, 0.87f + fuzz, FragmentTexCoord.y) - (smoothstep(1.f - fuzz, 1.f + fuzz, FragmentTexCoord.y)));
+  topWear = topWear * -0.2f + 1.f;
+  rough *= topWear;
+
+  n = rotate(n,v,rough * 1.2f);
 
   for(int i = 0; i < 14; i++)
   {
@@ -276,8 +284,4 @@ void main()
   }
 
   FragColor = vec4(totalLight , alpha);
-  if (FragmentTexCoord.x > 0.06f  && FragmentTexCoord.x < 0.1f &&
-      FragmentTexCoord.y > 0.87f)
-    FragColor = vec4(1.f, 0.f, 0.f, 1.f);
-  //FragColor = vec4(vec3(n), 1.f);
 }
