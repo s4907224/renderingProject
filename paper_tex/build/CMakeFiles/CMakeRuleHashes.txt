@@ -1,0 +1,19 @@
+# Hashes of file build rules.
+d0063f3b86879cb85cdd397ab0c5ca2e CMakeFiles/_paper
+d0063f3b86879cb85cdd397ab0c5ca2e CMakeFiles/paper
+3f589570c077b1d1412233f9169f8bb9 CMakeFiles/paper_auxclean
+d0063f3b86879cb85cdd397ab0c5ca2e CMakeFiles/paper_pdf
+26dfb7b8c3edd9856fd10e529dee8a51 images/final.png
+7f7c051f67e5a6224201ec281425787e images/image1.jpg
+018a870ceb0217306cc9fc427cfe67e3 images/image2.jpg
+0e2c46e66ce3d5bb3e216696f8c4e3d4 images/photoref.jpg
+fca3e4f01cdc3c5afcbab3a1ae946fb2 images/pref.jpg
+7948fa434308903b43d31cd9a493ace5 images/scratches.jpg
+2c153a1308d531831ace6dc8d0aff4b5 images/scratchesproc.jpg
+8582747a7f81da7c636a1ab13fcc8a00 images/sd.jpg
+2ae6afd242cd56a6ba803350c0fcb226 images/strawberry.jpg
+66447279f0f3185c4d0aeb2b14d5bedf images/tempRef.png
+9267c6d746ed3acd6cd4b626e8d13ab9 images/three.png
+dc7dbe286afbcc0a9c2806f9c216996f paper.pdf
+954ac82644d7ed0e74e3a4a98191fd48 paper.tex
+8e0a55969690531850fb605f8667326a references.bib

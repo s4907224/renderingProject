@@ -1,0 +1,12 @@
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/rebuild_cache.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/paper.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/paper_pdf.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/safepdf.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/edit_cache.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/pdf.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/ps.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/paper_auxclean.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/dvi.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/html.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/_paper.dir
+/home/cglover/s4907224_GLSL/paper_tex/build/CMakeFiles/auxclean.dir
