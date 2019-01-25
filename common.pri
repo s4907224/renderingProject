@@ -15,14 +15,14 @@ isEmpty(NGLPATH) {
 # Check to see if there is a custom IGL directory (I've put it on /public/devel)
 IGLPATH = $$(IGLDIR)
 isEmpty(IGLPATH) {
-  IGLPATH = /home/cglover/libigl
+  IGLPATH = /public/devel/libigl
 }
 
 # Check to see if there is a custom libnoise directory (this is part of the standard build)
 TEST = $$(NOISEDIR)
 isEmpty(TEST) {
-  NOISEINCPATH = /home/cglover/rendering_examples/common/packages/noise/src
-  NOISELIBPATH = /home/cglover/rendering_examples/common/packages/noise/lib
+  NOISEINCPATH = /usr/local/src/noise/src
+  NOISELIBPATH = /usr/local/include/noise/lib
 } 
 else {
   NOISEINCPATH = $$(NOISEDIR)/src
@@ -32,11 +32,11 @@ else {
 # Check to see if there is a custom Eigen installation
 EIGENPATH = $$(EIGENDIR)
 isEmpty(EIGENPATH) {
-  EIGENPATH = /home/cglover/eigen
+  EIGENPATH = /public/devel/2018/include/eigen3
 }
 
 # The include path - includes a number of environment variables (see README.md)
-INCLUDEPATH += $$NGLPATH/include $$IGLPATH/include $$EIGENPATH $$NOISEINCPATH
+INCLUDEPATH += $$NGLPATH/include ../common/include $$IGLPATH/include $$EIGENPATH $$NOISEINCPATH
 
 # The config includes C++11 features. I'll assume you want debug mode!
 CONFIG += c++11 debug
@@ -49,7 +49,10 @@ OBJECTS_DIR = obj
 
 # The libs path (this will change depending on your platform
 if ($$LAB_BUILD) {
-  LIBS += -lXi -ldl -lX11 -lXrandr -lXinerama -lXcursor -lXxf86vm -lglfw3 
+  #LIBS+=$$system(pkg-config --libs glfw3)
+	
+  LIBS += -lXi -ldl -lX11 -lXrandr -lXinerama -lXcursor -lXxf86vm -lglfw3
+  DEFINES += GLM_ENABLE_EXPERIMENTAL
 } else {
   LIBS += -lglfw
 }
